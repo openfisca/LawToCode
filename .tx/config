@@ -1,0 +1,8 @@
+[main]
+host = https://www.transifex.com
+
+[law-to-code.python]
+file_filter = lawtocode/i18n/<lang>/LC_MESSAGES/law-to-code.po
+source_file = lawtocode/i18n/law-to-code.pot
+source_lang = en
+

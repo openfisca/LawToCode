@@ -1,0 +1,15 @@
+build/
+cache/
+lawtocode/static/.webassets-cache/
+lawtocode/static/bower/
+lawtocode/static/css/site-less.css
+lawtocode/static/css/site.min.css
+development-*.ini
+dist/
+projects-*.ini
+*.egg-info
+*.mo
+*.pyc
+*.pyo
+*~
+

@@ -50,12 +50,12 @@ from lawtocode import conf, model, texthelpers, urls
     </rights>
 <%
     formulas = list(cursor)
-    timestamp = max(
-        formula.timestamp
+    updated = max(
+        formula.updated
         for formula in formulas
         )
 %>\
-    <updated>${timestamp.split('Z', 1)[0]}Z</updated>
+    <updated>${updated}</updated>
     % for formula in formulas:
     <entry>
         <title>${formula.title}</title>
@@ -63,7 +63,8 @@ from lawtocode import conf, model, texthelpers, urls
         <link href="${formula.get_admin_full_url(ctx) if data['target'] is None \
                 else formula.get_back_url(ctx) if data['target'] == 'back' \
                 else formula.get_front_url(ctx)}"/>
-        <updated>${formula.timestamp.split('Z', 1)[0]}Z</updated>
+        <published>${formula.published}</published>
+        <updated>${formula.updated}</updated>
         % if formula.description:
         <summary type="html">
             ${texthelpers.clean_html(formula.description)}

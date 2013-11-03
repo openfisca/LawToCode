@@ -26,8 +26,6 @@
 """Conversion functions"""
 
 
-import re
-
 from biryani1.baseconv import *
 from biryani1.bsonconv import *
 from biryani1.datetimeconv import *
@@ -36,15 +34,13 @@ from biryani1.jsonconv import *
 from biryani1.states import default_state, State
 
 
-N_ = lambda message: message
-year_or_month_or_day_re = re.compile(ur'[0-2]\d{3}(-(0[1-9]|1[0-2])(-([0-2]\d|3[0-1]))?)?$')
-
-
 input_to_token = cleanup_line
 
-input_to_year_or_month_or_day_str = pipe(
-    cleanup_line,
-    test(year_or_month_or_day_re.match, error = N_(u'Invalid year or month or day')),
+
+input_to_words = pipe(
+    input_to_slug,
+    function(lambda slug: sorted(set(slug.split(u'-')))),
+    empty_to_none,
     )
 
 

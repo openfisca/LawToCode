@@ -64,11 +64,11 @@ from lawtocode import model, texthelpers, urls
                     <th><a href="${model.Formula.get_admin_class_url(ctx, **urls.relative_query(inputs, page = None,
                             sort = 'slug'))}">${_(u"Title")}</a></th>
             % endif
-            % if data['sort'] == 'timestamp':
-                    <th>${_(u"Last Modification")} <span class="glyphicon glyphicon-sort-by-attributes-alt"></span></th>
+            % if data['sort'] == 'updated':
+                    <th>${_(u"Updated")} <span class="glyphicon glyphicon-sort-by-attributes-alt"></span></th>
             % else:
                     <th><a href="${model.Formula.get_admin_class_url(ctx, **urls.relative_query(inputs, page = None,
-                            sort = 'timestamp'))}">${_(u"Last Modification")}</a></th>
+                            sort = 'updated'))}">${_(u"Updated")}</a></th>
             % endif
                 </tr>
             </thead>
@@ -84,7 +84,7 @@ from lawtocode import model, texthelpers, urls
                         ${texthelpers.truncate(description_text, length = 180, whole_word = True)}
             % endif
                     </td>
-                    <td>${formula.timestamp.split('T')[0]}</td>
+                    <td>${formula.updated.split('T')[0]}</td>
                 </tr>
         % endfor
             </tbody>

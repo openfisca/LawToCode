@@ -28,7 +28,7 @@ from lawtocode import model, texthelpers, urls
 %>
 
 
-<%inherit file="/object-admin-view.mako"/>
+<%inherit file="/site.mako"/>
 
 
 <%def name="breadcrumb_content()" filter="trim">
@@ -58,7 +58,7 @@ ${account.get_title(ctx)} - ${parent.title_content()}
 
 <%def name="view_fields()" filter="trim">
 <%
-        value = account.full_name
+    value = account.full_name
 %>\
         % if value is not None:
         <div class="row">
@@ -67,30 +67,30 @@ ${account.get_title(ctx)} - ${parent.title_content()}
         </div>
         % endif
 <%
-        value = account.slug
+    value = account.slug
 %>\
-        % if value is not None:
+    % if value is not None:
         <div class="row">
             <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Slug"))}</b></div>
             <div class="col-sm-10">${value}</div>
         </div>
-        % endif
+    % endif
 <%
-        value = account.email
+    value = account.email
 %>\
-        % if value is not None:
+    % if value is not None:
         <div class="row">
             <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Email"))}</b></div>
             <div class="col-sm-10">${value}</div>
         </div>
-        % endif
+    % endif
 <%
-        value = account.description
+    value = account.description
 %>\
-        % if value is not None:
+    % if value is not None:
         <div class="row">
             <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Description"))}</b></div>
-            % if value is not None:
+        % if value is not None:
             <div class="col-sm-10">
                 <ul class="nav nav-tabs">
                     <li class="active"><a data-toggle="tab" href="#about-view">${_(u"View")}</a></li>
@@ -105,35 +105,44 @@ ${account.get_title(ctx)} - ${parent.title_content()}
                     </div>
                 </div>
             </div>
-            % endif
-        </div>
         % endif
+        </div>
+    % endif
 <%
-        value = account.admin
+    value = account.admin
 %>\
-        % if value is not None:
+    % if value is not None:
         <div class="row">
             <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Admin"))}</b></div>
             <div class="col-sm-10">${value}</div>
         </div>
-        % endif
+    % endif
 <%
-        value = account.api_key
+    value = account.api_key
 %>\
-        % if value is not None:
+    % if value is not None:
         <div class="row">
             <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("API Key"))}</b></div>
             <div class="col-sm-10">${value}</div>
         </div>
-        % endif
+    % endif
 <%
-        value = account.timestamp
+    value = account.updated
 %>\
-        % if value is not None:
+    % if value is not None:
         <div class="row">
-            <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Last Modification"))}</b></div>
+            <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Updated"))}</b></div>
             <div class="col-sm-10">${value}</div>
         </div>
-        % endif
+    % endif
+<%
+    value = account.published
+%>\
+    % if value is not None:
+        <div class="row">
+            <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Published"))}</b></div>
+            <div class="col-sm-10">${value}</div>
+        </div>
+    % endif
 </%def>
 

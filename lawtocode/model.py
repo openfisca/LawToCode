@@ -31,13 +31,15 @@ import conv
 import datetime
 import re
 
-from . import objects, urls, wsgihelpers
+from biryani1 import strings
+
+from . import objects, texthelpers, urls, wsgihelpers
 
 
 uuid_re = re.compile(ur'[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$')
 
 
-class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.SmartWrapper):
+class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.ActivityStreamWrapper):
     admin = False
     api_key = None
     collection_name = 'accounts'
@@ -45,10 +47,6 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
     email = None
     full_name = None
     slug = None
-    timestamp = None
-
-    def before_upsert(self, ctx, old_bson, bson):
-        self.timestamp = bson['timestamp'] = datetime.datetime.utcnow().isoformat()
 
     @classmethod
     def bson_to_json(cls, value, state = None):
@@ -59,6 +57,17 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         if id is not None:
             value['id'] = unicode(id)
         return value, None
+
+    def compute_words(self):
+        self.words = sorted(set(strings.slugify(u'-'.join(
+            fragment
+            for fragment in (
+                self._id,
+                self.email,
+                self.full_name,
+                )
+            if fragment is not None
+            )).split(u'-'))) or None
 
     @classmethod
     def get_admin_class_full_url(cls, ctx, *path, **query):
@@ -82,8 +91,8 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         return self.full_name or self.slug or self.email or self._id
 
     @classmethod
-    def make_id_or_slug_to_instance(cls):
-        def id_or_slug_to_instance(value, state = None):
+    def make_id_or_slug_or_words_to_instance(cls):
+        def id_or_slug_or_words_to_instance(value, state = None):
             if value is None:
                 return value, None
             if state is None:
@@ -91,14 +100,26 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
             match = uuid_re.match(value)
             if match is None:
                 self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
-                if self is None:
-                    return value, state._(u"No account with slug {0}").format(value)
             else:
                 self = cls.find_one(value, as_class = collections.OrderedDict)
-                if self is None:
-                    return value, state._(u"No account with ID {0}").format(value)
+            if self is None:
+                words = sorted(set(value.split(u'-')))
+                instances = list(cls.find(
+                    dict(
+                        words = {'$all': [
+                            re.compile(u'^{}'.format(re.escape(word)))
+                            for word in words
+                            ]},
+                        ),
+                    as_class = collections.OrderedDict,
+                    ).limit(2))
+                if not instances:
+                    return value, state._(u"No account with ID, slug or words: {0}").format(value)
+                if len(instances) > 1:
+                    return value, state._(u"Too much accounts with words: {0}").format(u' '.join(words))
+                self = instances[0]
             return self, None
-        return id_or_slug_to_instance
+        return id_or_slug_or_words_to_instance
 
     def turn_to_json_attributes(self, state):
         value, error = conv.object_to_clean_dict(self, state = state)
@@ -110,15 +131,11 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         return value, None
 
 
-class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.SmartWrapper):
+class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.ActivityStreamWrapper):
     collection_name = u'formulas'
     description = None
     slug = None
-    timestamp = None
     title = None
-
-    def before_upsert(self, ctx, old_bson, bson):
-        self.timestamp = bson['timestamp'] = datetime.datetime.utcnow().isoformat()
 
     @classmethod
     def bson_to_json(cls, value, state = None):
@@ -129,6 +146,17 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         if id is not None:
             value['id'] = unicode(id)
         return value, None
+
+    def compute_words(self):
+        self.words = sorted(set(strings.slugify(u'-'.join(
+            fragment
+            for fragment in (
+                self._id,
+                texthelpers.textify_html(self.description),
+                self.title,
+                )
+            if fragment is not None
+            )).split(u'-'))) or None
 
     @classmethod
     def get_admin_class_full_url(cls, ctx, *path, **query):
@@ -175,8 +203,8 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         return self._user
 
     @classmethod
-    def make_id_or_slug_to_instance(cls):
-        def id_to_instance(value, state = None):
+    def make_id_or_slug_or_words_to_instance(cls):
+        def id_or_slug_or_words_to_instance(value, state = None):
             if value is None:
                 return value, None
             if state is None:
@@ -184,14 +212,26 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
             match = uuid_re.match(value)
             if match is None:
                 self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
-                if self is None:
-                    return value, state._(u"No formula with slug {0}").format(value)
             else:
                 self = cls.find_one(value, as_class = collections.OrderedDict)
-                if self is None:
-                    return value, state._(u"No formula with ID {0}").format(value)
+            if self is None:
+                words = sorted(set(value.split(u'-')))
+                instances = list(cls.find(
+                    dict(
+                        words = {'$all': [
+                            re.compile(u'^{}'.format(re.escape(word)))
+                            for word in words
+                            ]},
+                        ),
+                    as_class = collections.OrderedDict,
+                    ).limit(2))
+                if not instances:
+                    return value, state._(u"No formula with ID, slug or words: {0}").format(value)
+                if len(instances) > 1:
+                    return value, state._(u"Too much formulas with words: {0}").format(u' '.join(words))
+                self = instances[0]
             return self, None
-        return id_to_instance
+        return id_or_slug_or_words_to_instance
 
     def turn_to_json_attributes(self, state):
         value, error = conv.object_to_clean_dict(self, state = state)
@@ -276,15 +316,11 @@ class Status(objects.Mapper, objects.Wrapper):
     last_upgrade_name = None
 
 
-class Variable(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.SmartWrapper):
+class Variable(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.ActivityStreamWrapper):
     collection_name = u'variables'
     description = None
     slug = None
-    timestamp = None
     title = None
-
-    def before_upsert(self, ctx, old_bson, bson):
-        self.timestamp = bson['timestamp'] = datetime.datetime.utcnow().isoformat()
 
     @classmethod
     def bson_to_json(cls, value, state = None):
@@ -295,6 +331,17 @@ class Variable(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, ob
         if id is not None:
             value['id'] = unicode(id)
         return value, None
+
+    def compute_words(self):
+        self.words = sorted(set(strings.slugify(u'-'.join(
+            fragment
+            for fragment in (
+                self._id,
+                texthelpers.textify_html(self.description),
+                self.title,
+                )
+            if fragment is not None
+            )).split(u'-'))) or None
 
     @classmethod
     def get_admin_class_full_url(cls, ctx, *path, **query):
@@ -341,8 +388,8 @@ class Variable(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, ob
         return self._user
 
     @classmethod
-    def make_id_or_slug_to_instance(cls):
-        def id_to_instance(value, state = None):
+    def make_id_or_slug_or_words_to_instance(cls):
+        def id_or_slug_or_words_to_instance(value, state = None):
             if value is None:
                 return value, None
             if state is None:
@@ -350,14 +397,26 @@ class Variable(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, ob
             match = uuid_re.match(value)
             if match is None:
                 self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
-                if self is None:
-                    return value, state._(u"No variable with slug {0}").format(value)
             else:
                 self = cls.find_one(value, as_class = collections.OrderedDict)
-                if self is None:
-                    return value, state._(u"No variable with ID {0}").format(value)
+            if self is None:
+                words = sorted(set(value.split(u'-')))
+                instances = list(cls.find(
+                    dict(
+                        words = {'$all': [
+                            re.compile(u'^{}'.format(re.escape(word)))
+                            for word in words
+                            ]},
+                        ),
+                    as_class = collections.OrderedDict,
+                    ).limit(2))
+                if not instances:
+                    return value, state._(u"No variable with ID, slug or words: {0}").format(value)
+                if len(instances) > 1:
+                    return value, state._(u"Too much variables with words: {0}").format(u' '.join(words))
+                self = instances[0]
             return self, None
-        return id_to_instance
+        return id_or_slug_or_words_to_instance
 
     def turn_to_json_attributes(self, state):
         value, error = conv.object_to_clean_dict(self, state = state)
@@ -433,10 +492,16 @@ def setup():
     Account.ensure_index('api_key', sparse = True, unique = True)
     Account.ensure_index('email', unique = True)
     Account.ensure_index('slug', unique = True)
+    Account.ensure_index('updated')
+    Account.ensure_index('words')
 
 #    Formula.ensure_index('slug', unique = True)
+    Formula.ensure_index('updated')
+    Formula.ensure_index('words')
 
     Session.ensure_index('expiration')
     Session.ensure_index('token', unique = True)
 
 #    Variable.ensure_index('slug', unique = True)
+    Variable.ensure_index('updated')
+    Variable.ensure_index('words')

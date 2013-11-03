@@ -50,12 +50,12 @@ from lawtocode import conf, model, texthelpers, urls
     </rights>
 <%
     variables = list(cursor)
-    timestamp = max(
-        variable.timestamp
+    updated = max(
+        variable.updated
         for variable in variables
         )
 %>\
-    <updated>${timestamp.split('Z', 1)[0]}Z</updated>
+    <updated>${updated}</updated>
     % for variable in variables:
     <entry>
         <title>${variable.title}</title>
@@ -63,7 +63,8 @@ from lawtocode import conf, model, texthelpers, urls
         <link href="${variable.get_admin_full_url(ctx) if data['target'] is None \
                 else variable.get_back_url(ctx) if data['target'] == 'back' \
                 else variable.get_front_url(ctx)}"/>
-        <updated>${variable.timestamp.split('Z', 1)[0]}Z</updated>
+        <published>${variable.published}</published>
+        <updated>${variable.updated}</updated>
         % if variable.description:
         <summary type="html">
             ${texthelpers.clean_html(variable.description)}

@@ -27,6 +27,7 @@
 
 
 import collections
+import datetime
 import uuid
 
 import pymongo
@@ -318,3 +319,17 @@ class SmartWrapper(Wrapper):
             self._id = bson['_id']
         self.after_upsert(ctx, old_bson, bson)
         return True
+
+
+# Level-3 Classes
+
+
+class ActivityStreamWrapper(SmartWrapper):
+    published = None
+    updated = None
+    words = None
+
+    def before_upsert(self, ctx, old_bson, bson):
+        self.updated = bson['updated'] = updated = datetime.datetime.utcnow().isoformat() + 'Z'
+        if self.published is None:
+            self.published = bson['published'] = updated

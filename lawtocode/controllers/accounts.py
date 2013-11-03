@@ -159,6 +159,7 @@ def admin_edit(req):
                 errors = dict(full_name = ctx._('An account with the same name already exists.'))
         if errors is None:
             account.set_attributes(**data)
+            account.compute_words()
             account.save(ctx, safe = True)
 
             # View account.
@@ -188,9 +189,9 @@ def admin_index(req):
                     ),
                 sort = conv.pipe(
                     conv.cleanup_line,
-                    conv.test_in(['slug', 'timestamp']),
+                    conv.test_in(['slug', 'updated']),
                     ),
-                term = conv.input_to_slug,
+                term = conv.input_to_words,
                 ),
             ),
         conv.rename_item('page', 'page_number'),
@@ -200,12 +201,15 @@ def admin_index(req):
 
     criteria = {}
     if data['term'] is not None:
-        criteria['slug'] = re.compile(re.escape(data['term']))
+        criteria['words'] = {'$all': [
+            re.compile(u'^{}'.format(re.escape(word)))
+            for word in data['term']
+            ]}
     cursor = model.Account.find(criteria, as_class = collections.OrderedDict)
     pager = paginations.Pager(item_count = cursor.count(), page_number = data['page_number'])
     if data['sort'] == 'slug':
         cursor.sort([('slug', pymongo.ASCENDING)])
-    elif data['sort'] == 'timestamp':
+    elif data['sort'] == 'updated':
         cursor.sort([(data['sort'], pymongo.DESCENDING), ('slug', pymongo.ASCENDING)])
     accounts = cursor.skip(pager.first_item_index or 0).limit(pager.page_size)
     return templates.render(ctx, '/accounts/admin-index.mako', accounts = accounts, data = data, errors = errors,
@@ -564,6 +568,7 @@ def login(req):
         user.email = verification_data['email']
         user.full_name = verification_data['email']
         user.slug = strings.slugify(user.full_name)
+        user.compute_words()
         user.save(ctx, safe = True)
     ctx.user = user
 
@@ -612,8 +617,8 @@ def route_admin(environ, start_response):
     account, error = conv.pipe(
         conv.input_to_slug,
         conv.not_none,
-        model.Account.make_id_or_slug_to_instance(),
-        )(req.urlvars.get('id_or_slug'), state = ctx)
+        model.Account.make_id_or_slug_or_words_to_instance(),
+        )(req.urlvars.get('id_or_slug_or_words'), state = ctx)
     if error is not None:
         return wsgihelpers.not_found(ctx, explanation = ctx._('Account Error: {}').format(error))(
             environ, start_response)
@@ -631,7 +636,7 @@ def route_admin(environ, start_response):
 def route_admin_class(environ, start_response):
     router = urls.make_router(
         ('GET', '^/?$', admin_index),
-        (None, '^/(?P<id_or_slug>[^/]+)(?=/|$)', route_admin),
+        (None, '^/(?P<id_or_slug_or_words>[^/]+)(?=/|$)', route_admin),
         )
     return router(environ, start_response)
 
@@ -643,8 +648,8 @@ def route_api1(environ, start_response):
     account, error = conv.pipe(
         conv.input_to_slug,
         conv.not_none,
-        model.Account.make_id_or_slug_to_instance(),
-        )(req.urlvars.get('id_or_slug'), state = ctx)
+        model.Account.make_id_or_slug_or_words_to_instance(),
+        )(req.urlvars.get('id_or_slug_or_words'), state = ctx)
     if error is not None:
         params = req.GET
         return wsgihelpers.respond_json(ctx,
@@ -673,6 +678,6 @@ def route_api1_class(environ, start_response):
     router = urls.make_router(
         ('GET', '^/?$', api1_index),
         ('GET', '^/typeahead/?$', api1_typeahead),
-        (None, '^/(?P<id_or_slug>[^/]+)(?=/|$)', route_api1),
+        (None, '^/(?P<id_or_slug_or_words>[^/]+)(?=/|$)', route_api1),
         )
     return router(environ, start_response)

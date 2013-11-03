@@ -30,7 +30,7 @@ from lawtocode import model, texthelpers, urls
 %>
 
 
-<%inherit file="/object-admin-view.mako"/>
+<%inherit file="/site.mako"/>
 
 
 <%def name="breadcrumb_content()" filter="trim">
@@ -85,11 +85,20 @@ ${variable.get_title(ctx)} - ${parent.title_content()}
         </div>
     % endif
 <%
-    value = variable.timestamp
+    value = variable.updated
 %>\
     % if value is not None:
         <div class="row">
-            <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Last Modification"))}</b></div>
+            <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Updated"))}</b></div>
+            <div class="col-sm-10">${value}</div>
+        </div>
+    % endif
+<%
+    value = variable.published
+%>\
+    % if value is not None:
+        <div class="row">
+            <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Published"))}</b></div>
             <div class="col-sm-10">${value}</div>
         </div>
     % endif

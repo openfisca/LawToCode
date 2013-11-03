@@ -66,11 +66,11 @@ from lawtocode import model, urls
                             page = None, sort = 'slug'))}">${_(u"Full Name")}</a></th>
         % endif
                     <th>${_(u"Profile")}</th>
-        % if data['sort'] == 'timestamp':
-                    <th>${_(u"Last Modification")} <span class="glyphicon glyphicon-sort-by-attributes-alt"></span></th>
+        % if data['sort'] == 'updated':
+                    <th>${_(u"Updated")} <span class="glyphicon glyphicon-sort-by-attributes-alt"></span></th>
         % else:
                     <th><a href="${model.Account.get_admin_class_url(ctx, **urls.relative_query(inputs,
-                            page = None, sort = 'timestamp'))}">${_(u"Last Modification")}</a></th>
+                            page = None, sort = 'updated'))}">${_(u"Updated")}</a></th>
         % endif
                  </tr>
             </thead>
@@ -80,7 +80,7 @@ from lawtocode import model, urls
                     <td><a href="${account.get_admin_url(ctx)}">${account.email or ''}</a></td>
                     <td>${account.full_name or ''}</td>
                     <td>${_(u'Administrator') if account.admin else ''}</td>
-                    <td>${account.timestamp or ''}</td>
+                    <td>${account.updated or ''}</td>
                 </tr>
         % endfor
             </tbody>

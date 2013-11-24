@@ -159,6 +159,8 @@ def admin_edit(req):
                 errors = dict(full_name = ctx._('An account with the same name already exists.'))
         if errors is None:
             account.set_attributes(**data)
+            if account.api_key is None:
+                account.api_key = unicode(uuid.uuid4())
             account.compute_words()
             account.save(ctx, safe = True)
 

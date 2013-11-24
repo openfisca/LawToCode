@@ -56,6 +56,7 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         id = value.pop('_id', None)
         if id is not None:
             value['id'] = unicode(id)
+        value.pop('api_key', None)
         return value, None
 
     def compute_words(self):
@@ -128,6 +129,7 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         id = value.pop('_id', None)
         if id is not None:
             value['id'] = id
+        value.pop('api_key', None)
         return value, None
 
 

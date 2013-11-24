@@ -130,9 +130,9 @@ def admin_edit(req):
         assert req.method == 'POST'
         inputs = extract_account_inputs_from_params(ctx, req.POST)
         if model.is_admin(ctx):
-            data, errors = inputs_to_account_data(inputs, state = ctx)
-        else:
             data, errors = inputs_to_account_admin_data(inputs, state = ctx)
+        else:
+            data, errors = inputs_to_account_data(inputs, state = ctx)
         if errors is None:
             data['slug'], error = conv.pipe(
                 conv.input_to_slug,

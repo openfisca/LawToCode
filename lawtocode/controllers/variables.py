@@ -473,7 +473,7 @@ def api1_typeahead(req):
         )
     data, errors = conv.struct(
         dict(
-            q = conv.cleanup_line,
+            q = conv.input_to_words,
             ),
         )(inputs, state = ctx)
     if errors is not None:
@@ -481,7 +481,10 @@ def api1_typeahead(req):
 
     criteria = {}
     if data['q'] is not None:
-        criteria['title'] = re.compile(re.escape(data['q']))
+        criteria['words'] = {'$all': [
+            re.compile(u'^{}'.format(re.escape(word)))
+            for word in data['q']
+            ]}
     cursor = model.Variable.get_collection().find(criteria, ['title'])
     return wsgihelpers.respond_json(ctx,
         [

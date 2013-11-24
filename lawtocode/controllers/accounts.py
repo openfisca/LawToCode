@@ -487,7 +487,7 @@ def api1_typeahead(req):
         )
     data, errors = conv.struct(
         dict(
-            q = conv.input_to_slug,
+            q = conv.input_to_words,
             ),
         )(inputs, state = ctx)
     if errors is not None:
@@ -495,7 +495,10 @@ def api1_typeahead(req):
 
     criteria = {}
     if data['q'] is not None:
-        criteria['slug'] = re.compile(re.escape(data['q']))
+        criteria['words'] = {'$all': [
+            re.compile(u'^{}'.format(re.escape(word)))
+            for word in data['q']
+            ]}
     cursor = model.Account.get_collection().find(criteria, ['full_name'])
     return wsgihelpers.respond_json(ctx,
         [

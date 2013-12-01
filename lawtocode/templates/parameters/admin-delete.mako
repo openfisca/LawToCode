@@ -24,45 +24,34 @@
 
 
 <%!
-from lawtocode import conf, model, urls
+from lawtocode import model, urls
 %>
 
 
 <%inherit file="/site.mako"/>
-<%namespace name="edit" file="admin-edit.mako"/>
+<%namespace name="view" file="admin-view.mako"/>
 
 
 <%def name="breadcrumb_content()" filter="trim">
             <%parent:breadcrumb_content/>
-            <li><a href="${model.Variable.get_admin_class_url(ctx)}">${_(u"Variables")}</a></li>
-            <li class="active">${_(u'New')}</li>
+            <li><a href="${urls.get_url(ctx, 'admin')}">${_(u"Admin")}</a></li>
+            <li><a href="${model.Parameter.get_admin_class_url(ctx)}">${_(u"Parameters")}</a></li>
+            <li><a href="${parameter.get_admin_url(ctx)}">${parameter.get_title(ctx)}</a></li>
+            <li class="active">${_(u'Delete')}</li>
 </%def>
 
 
 <%def name="container_content()" filter="trim">
-        <form action="${model.Variable.get_admin_class_url(ctx, 'new')}" method="post" role="form">
-            <%edit:hidden_fields/>
-            <fieldset>
-                <legend>${_(u"Creation of Variable")}</legend>
-                <%self:error_alert/>
-                <%edit:form_fields/>
-                <button class="btn btn-primary" name="submit" type="submit"><span class="glyphicon glyphicon-ok"></span> ${_('Create')}</button>
-            </fieldset>
+        <h2>${_(u'Deletion of {}').format(parameter.get_title(ctx))}</h2>
+        <p class="confirm">${_(u"Are you sure that you want to delete this parameter?")}</p>
+        <form method="post" action="${parameter.get_admin_url(ctx, 'delete')}">
+            <%view:view_fields/>
+            <button class="btn btn-danger" name="submit" type="submit"><span class="glyphicon glyphicon-trash"></span> ${_('Delete')}</button>
         </form>
 </%def>
 
 
-<%def name="css()" filter="trim">
-        <%edit:css/>
-</%def>
-
-
-<%def name="scripts()" filter="trim">
-        <%edit:scripts/>
-</%def>
-
-
 <%def name="title_content()" filter="trim">
-${_(u'New Variable')} - ${parent.title_content()}
+${_(u'Delete')} - ${parameter.get_title(ctx)} - ${parent.title_content()}
 </%def>
 

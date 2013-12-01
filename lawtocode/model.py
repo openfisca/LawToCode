@@ -245,6 +245,118 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         return value, None
 
 
+class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.ActivityStreamWrapper):
+    collection_name = u'parameters'
+    description = None
+    slug = None
+    title = None
+
+    @classmethod
+    def bson_to_json(cls, value, state = None):
+        if value is None:
+            return value, None
+        value = value.copy()
+        id = value.pop('_id', None)
+        if id is not None:
+            value['id'] = unicode(id)
+        return value, None
+
+    def compute_words(self):
+        self.words = sorted(set(strings.slugify(u'-'.join(
+            fragment
+            for fragment in (
+                self._id,
+                texthelpers.textify_html(self.description),
+                self.title,
+                )
+            if fragment is not None
+            )).split(u'-'))) or None
+
+    @classmethod
+    def get_admin_class_full_url(cls, ctx, *path, **query):
+        return urls.get_full_url(ctx, 'admin', 'parameters', *path, **query)
+
+    @classmethod
+    def get_admin_class_url(cls, ctx, *path, **query):
+        return urls.get_url(ctx, 'admin', 'parameters', *path, **query)
+
+    def get_admin_full_url(self, ctx, *path, **query):
+        if self._id is None and self.slug is None:
+            return None
+        return self.get_admin_class_full_url(ctx, self.slug or self._id, *path, **query)
+
+    def get_admin_url(self, ctx, *path, **query):
+        if self._id is None and self.slug is None:
+            return None
+        return self.get_admin_class_url(ctx, self.slug or self._id, *path, **query)
+
+    @classmethod
+    def get_class_full_url(cls, ctx, *path, **query):
+        return urls.get_full_url(ctx, 'parameters', *path, **query)
+
+    @classmethod
+    def get_class_url(cls, ctx, *path, **query):
+        return urls.get_url(ctx, 'parameters', *path, **query)
+
+    def get_full_url(self, ctx, *path, **query):
+        if self._id is None and self.slug is None:
+            return None
+        return self.get_class_full_url(ctx, self.slug or self._id, *path, **query)
+
+    def get_title(self, ctx):
+        return self.title or self.slug or self._id
+
+    def get_url(self, ctx, *path, **query):
+        if self._id is None and self.slug is None:
+            return None
+        return self.get_class_url(ctx, self.slug or self._id, *path, **query)
+
+    def get_user(self, ctx):
+        if self._user is UnboundLocalError:
+            self._user = Account.find_one(self.user_id) if self.user_id is not None else None
+        return self._user
+
+    @classmethod
+    def make_id_or_slug_or_words_to_instance(cls):
+        def id_or_slug_or_words_to_instance(value, state = None):
+            if value is None:
+                return value, None
+            if state is None:
+                state = conv.default_state
+            match = uuid_re.match(value)
+            if match is None:
+                self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
+            else:
+                self = cls.find_one(value, as_class = collections.OrderedDict)
+            if self is None:
+                words = sorted(set(value.split(u'-')))
+                instances = list(cls.find(
+                    dict(
+                        words = {'$all': [
+                            re.compile(u'^{}'.format(re.escape(word)))
+                            for word in words
+                            ]},
+                        ),
+                    as_class = collections.OrderedDict,
+                    ).limit(2))
+                if not instances:
+                    return value, state._(u"No parameter with ID, slug or words: {0}").format(value)
+                if len(instances) > 1:
+                    return value, state._(u"Too much parameters with words: {0}").format(u' '.join(words))
+                self = instances[0]
+            return self, None
+        return id_or_slug_or_words_to_instance
+
+    def turn_to_json_attributes(self, state):
+        value, error = conv.object_to_clean_dict(self, state = state)
+        if error is not None:
+            return value, error
+        id = value.pop('_id', None)
+        if id is not None:
+            value['id'] = id
+        return value, None
+
+
 class Session(objects.JsonMonoClassMapper, objects.Mapper, objects.SmartWrapper):
     _user = UnboundLocalError
     collection_name = 'sessions'
@@ -318,118 +430,6 @@ class Status(objects.Mapper, objects.Wrapper):
     last_upgrade_name = None
 
 
-class Variable(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.ActivityStreamWrapper):
-    collection_name = u'variables'
-    description = None
-    slug = None
-    title = None
-
-    @classmethod
-    def bson_to_json(cls, value, state = None):
-        if value is None:
-            return value, None
-        value = value.copy()
-        id = value.pop('_id', None)
-        if id is not None:
-            value['id'] = unicode(id)
-        return value, None
-
-    def compute_words(self):
-        self.words = sorted(set(strings.slugify(u'-'.join(
-            fragment
-            for fragment in (
-                self._id,
-                texthelpers.textify_html(self.description),
-                self.title,
-                )
-            if fragment is not None
-            )).split(u'-'))) or None
-
-    @classmethod
-    def get_admin_class_full_url(cls, ctx, *path, **query):
-        return urls.get_full_url(ctx, 'admin', 'variables', *path, **query)
-
-    @classmethod
-    def get_admin_class_url(cls, ctx, *path, **query):
-        return urls.get_url(ctx, 'admin', 'variables', *path, **query)
-
-    def get_admin_full_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
-            return None
-        return self.get_admin_class_full_url(ctx, self.slug or self._id, *path, **query)
-
-    def get_admin_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
-            return None
-        return self.get_admin_class_url(ctx, self.slug or self._id, *path, **query)
-
-    @classmethod
-    def get_class_full_url(cls, ctx, *path, **query):
-        return urls.get_full_url(ctx, 'variables', *path, **query)
-
-    @classmethod
-    def get_class_url(cls, ctx, *path, **query):
-        return urls.get_url(ctx, 'variables', *path, **query)
-
-    def get_full_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
-            return None
-        return self.get_class_full_url(ctx, self.slug or self._id, *path, **query)
-
-    def get_title(self, ctx):
-        return self.title or self.slug or self._id
-
-    def get_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
-            return None
-        return self.get_class_url(ctx, self.slug or self._id, *path, **query)
-
-    def get_user(self, ctx):
-        if self._user is UnboundLocalError:
-            self._user = Account.find_one(self.user_id) if self.user_id is not None else None
-        return self._user
-
-    @classmethod
-    def make_id_or_slug_or_words_to_instance(cls):
-        def id_or_slug_or_words_to_instance(value, state = None):
-            if value is None:
-                return value, None
-            if state is None:
-                state = conv.default_state
-            match = uuid_re.match(value)
-            if match is None:
-                self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
-            else:
-                self = cls.find_one(value, as_class = collections.OrderedDict)
-            if self is None:
-                words = sorted(set(value.split(u'-')))
-                instances = list(cls.find(
-                    dict(
-                        words = {'$all': [
-                            re.compile(u'^{}'.format(re.escape(word)))
-                            for word in words
-                            ]},
-                        ),
-                    as_class = collections.OrderedDict,
-                    ).limit(2))
-                if not instances:
-                    return value, state._(u"No variable with ID, slug or words: {0}").format(value)
-                if len(instances) > 1:
-                    return value, state._(u"Too much variables with words: {0}").format(u' '.join(words))
-                self = instances[0]
-            return self, None
-        return id_or_slug_or_words_to_instance
-
-    def turn_to_json_attributes(self, state):
-        value, error = conv.object_to_clean_dict(self, state = state)
-        if error is not None:
-            return value, error
-        id = value.pop('_id', None)
-        if id is not None:
-            value['id'] = id
-        return value, None
-
-
 def configure(ctx):
     pass
 
@@ -501,9 +501,9 @@ def setup():
     Formula.ensure_index('updated')
     Formula.ensure_index('words')
 
+#    Parameter.ensure_index('slug', unique = True)
+    Parameter.ensure_index('updated')
+    Parameter.ensure_index('words')
+
     Session.ensure_index('expiration')
     Session.ensure_index('token', unique = True)
-
-#    Variable.ensure_index('slug', unique = True)
-    Variable.ensure_index('updated')
-    Variable.ensure_index('words')

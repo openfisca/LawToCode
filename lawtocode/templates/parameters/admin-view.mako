@@ -36,34 +36,34 @@ from lawtocode import model, texthelpers, urls
 <%def name="breadcrumb_content()" filter="trim">
             <%parent:breadcrumb_content/>
             <li><a href="${urls.get_url(ctx, 'admin')}">${_(u"Admin")}</a></li>
-            <li><a href="${model.Variable.get_admin_class_url(ctx)}">${_(u"Variables")}</a></li>
-            <li class="active">${variable.get_title(ctx)}</li>
+            <li><a href="${model.Parameter.get_admin_class_url(ctx)}">${_(u"Parameters")}</a></li>
+            <li class="active">${parameter.get_title(ctx)}</li>
 </%def>
 
 
 <%def name="container_content()" filter="trim">
-        <h2>${variable.get_title(ctx)}</h2>
+        <h2>${parameter.get_title(ctx)}</h2>
         <%self:view_fields/>
         <div class="btn-toolbar">
-            <a class="btn btn-default" href="${urls.get_url(ctx, 'api', 1, 'variables', variable.slug)}">${_(u'JSON')}</a>
-            <a class="btn btn-default" href="${variable.get_admin_url(ctx, 'edit')}">${_(u'Edit')}</a>
-            <a class="btn btn-danger"  href="${variable.get_admin_url(ctx, 'delete')}"><span class="glyphicon glyphicon-trash"></span> ${_('Delete')}</a>
+            <a class="btn btn-default" href="${urls.get_url(ctx, 'api', 1, 'parameters', parameter.slug)}">${_(u'JSON')}</a>
+            <a class="btn btn-default" href="${parameter.get_admin_url(ctx, 'edit')}">${_(u'Edit')}</a>
+            <a class="btn btn-danger"  href="${parameter.get_admin_url(ctx, 'delete')}"><span class="glyphicon glyphicon-trash"></span> ${_('Delete')}</a>
         </div>
 </%def>
 
 
 <%def name="title_content()" filter="trim">
-${variable.get_title(ctx)} - ${parent.title_content()}
+${parameter.get_title(ctx)} - ${parent.title_content()}
 </%def>
 
 
 <%def name="view_fields()" filter="trim">
         <div class="row">
             <div class="col-sm-2 text-right"><b>${_(u'{0}:').format(_("Title"))}</b></div>
-            <div class="col-sm-10">${variable.title}</div>
+            <div class="col-sm-10">${parameter.title}</div>
         </div>
 <%
-    value = variable.description
+    value = parameter.description
 %>\
     % if value is not None:
         <div class="row">
@@ -85,7 +85,7 @@ ${variable.get_title(ctx)} - ${parent.title_content()}
         </div>
     % endif
 <%
-    value = variable.updated
+    value = parameter.updated
 %>\
     % if value is not None:
         <div class="row">
@@ -94,7 +94,7 @@ ${variable.get_title(ctx)} - ${parent.title_content()}
         </div>
     % endif
 <%
-    value = variable.published
+    value = parameter.published
 %>\
     % if value is not None:
         <div class="row">

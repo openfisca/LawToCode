@@ -50,11 +50,11 @@ msgid "No session with token {0}"
 msgstr ""
 
 #: lawtocode/model.py:354
-msgid "No variable with slug {0}"
+msgid "No parameter with slug {0}"
 msgstr ""
 
 #: lawtocode/model.py:358
-msgid "No variable with ID {0}"
+msgid "No parameter with ID {0}"
 msgstr ""
 
 #: lawtocode/model.py:397
@@ -129,14 +129,14 @@ msgstr ""
 #: lawtocode/controllers/accounts.py:113 lawtocode/controllers/accounts.py:119
 #: lawtocode/controllers/accounts.py:225 lawtocode/controllers/formulas.py:62
 #: lawtocode/controllers/formulas.py:80 lawtocode/controllers/formulas.py:175
-#: lawtocode/controllers/sessions.py:49 lawtocode/controllers/variables.py:62
-#: lawtocode/controllers/variables.py:80 lawtocode/controllers/variables.py:175
+#: lawtocode/controllers/sessions.py:49 lawtocode/controllers/parameters.py:62
+#: lawtocode/controllers/parameters.py:80 lawtocode/controllers/parameters.py:175
 msgid "Operation denied"
 msgstr ""
 
 #: lawtocode/controllers/accounts.py:92 lawtocode/controllers/formulas.py:60
 #: lawtocode/controllers/formulas.py:78 lawtocode/controllers/sessions.py:47
-#: lawtocode/controllers/variables.py:60 lawtocode/controllers/variables.py:78
+#: lawtocode/controllers/parameters.py:60 lawtocode/controllers/parameters.py:78
 msgid "Deletion forbidden"
 msgstr ""
 
@@ -173,22 +173,22 @@ msgid "You can not view an account."
 msgstr ""
 
 #: lawtocode/controllers/accounts.py:253 lawtocode/controllers/formulas.py:240
-#: lawtocode/controllers/variables.py:240
+#: lawtocode/controllers/parameters.py:240
 msgid "Invalid JSON in request DELETE body"
 msgstr ""
 
 #: lawtocode/controllers/accounts.py:285 lawtocode/controllers/formulas.py:272
-#: lawtocode/controllers/variables.py:272
+#: lawtocode/controllers/parameters.py:272
 msgid "Bad parameters in request"
 msgstr ""
 
 #: lawtocode/controllers/accounts.py:308 lawtocode/controllers/formulas.py:295
-#: lawtocode/controllers/variables.py:295
+#: lawtocode/controllers/parameters.py:295
 msgid "Unknown API Key: {}"
 msgstr ""
 
 #: lawtocode/controllers/accounts.py:323 lawtocode/controllers/formulas.py:310
-#: lawtocode/controllers/variables.py:310
+#: lawtocode/controllers/parameters.py:310
 msgid "Non-admin API Key: {}"
 msgstr ""
 
@@ -217,7 +217,7 @@ msgstr ""
 msgid "Formula search error: {}"
 msgstr ""
 
-#: lawtocode/controllers/formulas.py:173 lawtocode/controllers/variables.py:173
+#: lawtocode/controllers/formulas.py:173 lawtocode/controllers/parameters.py:173
 msgid "Creation unauthorized"
 msgstr ""
 
@@ -245,29 +245,29 @@ msgstr ""
 msgid "Session Error: {}"
 msgstr ""
 
-#: lawtocode/controllers/variables.py:61 lawtocode/controllers/variables.py:79
-msgid "You can not delete a variable."
+#: lawtocode/controllers/parameters.py:61 lawtocode/controllers/parameters.py:79
+msgid "You can not delete a parameter."
 msgstr ""
 
-#: lawtocode/controllers/variables.py:108
-msgid "A variable with the same email already exists."
+#: lawtocode/controllers/parameters.py:108
+msgid "A parameter with the same email already exists."
 msgstr ""
 
-#: lawtocode/controllers/variables.py:150 lawtocode/controllers/variables.py:475
-#: lawtocode/controllers/variables.py:530
-msgid "Variable search error: {}"
+#: lawtocode/controllers/parameters.py:150 lawtocode/controllers/parameters.py:475
+#: lawtocode/controllers/parameters.py:530
+msgid "Parameter search error: {}"
 msgstr ""
 
-#: lawtocode/controllers/variables.py:174
-msgid "You can not create a variable."
+#: lawtocode/controllers/parameters.py:174
+msgid "You can not create a parameter."
 msgstr ""
 
-#: lawtocode/controllers/variables.py:200
-msgid "A variable with the same name already exists."
+#: lawtocode/controllers/parameters.py:200
+msgid "A parameter with the same name already exists."
 msgstr ""
 
-#: lawtocode/controllers/variables.py:556 lawtocode/controllers/variables.py:595
-msgid "Variable Error: {}"
+#: lawtocode/controllers/parameters.py:556 lawtocode/controllers/parameters.py:595
+msgid "Parameter Error: {}"
 msgstr ""
 
 #: lawtocode/templates/index.mako:56
@@ -307,7 +307,7 @@ msgid "{} - Formulas Atom feed"
 msgstr ""
 
 #: lawtocode/templates/site.mako:100
-msgid "{} - Variables Atom feed"
+msgid "{} - Parameters Atom feed"
 msgstr ""
 
 #: lawtocode/templates/site.mako:108
@@ -325,9 +325,9 @@ msgstr ""
 #: lawtocode/templates/sessions/admin-view.mako:66
 #: lawtocode/templates/sessions/admin-view.mako:71
 #: lawtocode/templates/sessions/admin-view.mako:76
-#: lawtocode/templates/variables/admin-view.mako:62
-#: lawtocode/templates/variables/admin-view.mako:70
-#: lawtocode/templates/variables/admin-view.mako:92
+#: lawtocode/templates/parameters/admin-view.mako:62
+#: lawtocode/templates/parameters/admin-view.mako:70
+#: lawtocode/templates/parameters/admin-view.mako:92
 msgid "{0}:"
 msgstr ""
 
@@ -362,13 +362,13 @@ msgid "Formulas"
 msgstr ""
 
 #: lawtocode/templates/site.mako:233 lawtocode/templates/site.mako:257
-#: lawtocode/templates/variables/admin-delete.mako:38
-#: lawtocode/templates/variables/admin-edit.mako:37
-#: lawtocode/templates/variables/admin-index.mako:37
-#: lawtocode/templates/variables/admin-index.mako:132
-#: lawtocode/templates/variables/admin-new.mako:37
-#: lawtocode/templates/variables/admin-view.mako:39
-msgid "Variables"
+#: lawtocode/templates/parameters/admin-delete.mako:38
+#: lawtocode/templates/parameters/admin-edit.mako:37
+#: lawtocode/templates/parameters/admin-index.mako:37
+#: lawtocode/templates/parameters/admin-index.mako:132
+#: lawtocode/templates/parameters/admin-new.mako:37
+#: lawtocode/templates/parameters/admin-view.mako:39
+msgid "Parameters"
 msgstr ""
 
 #: lawtocode/templates/site.mako:248
@@ -416,10 +416,10 @@ msgstr ""
 #: lawtocode/templates/sessions/admin-delete.mako:37
 #: lawtocode/templates/sessions/admin-index.mako:36
 #: lawtocode/templates/sessions/admin-view.mako:36
-#: lawtocode/templates/variables/admin-delete.mako:37
-#: lawtocode/templates/variables/admin-edit.mako:36
-#: lawtocode/templates/variables/admin-index.mako:36
-#: lawtocode/templates/variables/admin-view.mako:38
+#: lawtocode/templates/parameters/admin-delete.mako:37
+#: lawtocode/templates/parameters/admin-edit.mako:36
+#: lawtocode/templates/parameters/admin-index.mako:36
+#: lawtocode/templates/parameters/admin-view.mako:38
 msgid "Admin"
 msgstr ""
 
@@ -435,17 +435,17 @@ msgstr ""
 #: lawtocode/templates/sessions/admin-delete.mako:49
 #: lawtocode/templates/sessions/admin-delete.mako:55
 #: lawtocode/templates/sessions/admin-view.mako:46
-#: lawtocode/templates/variables/admin-delete.mako:40
-#: lawtocode/templates/variables/admin-delete.mako:49
-#: lawtocode/templates/variables/admin-delete.mako:55
-#: lawtocode/templates/variables/admin-view.mako:50
+#: lawtocode/templates/parameters/admin-delete.mako:40
+#: lawtocode/templates/parameters/admin-delete.mako:49
+#: lawtocode/templates/parameters/admin-delete.mako:55
+#: lawtocode/templates/parameters/admin-view.mako:50
 msgid "Delete"
 msgstr ""
 
 #: lawtocode/templates/accounts/admin-delete.mako:45
 #: lawtocode/templates/formulas/admin-delete.mako:45
 #: lawtocode/templates/sessions/admin-delete.mako:45
-#: lawtocode/templates/variables/admin-delete.mako:45
+#: lawtocode/templates/parameters/admin-delete.mako:45
 msgid "Deletion of {}"
 msgstr ""
 
@@ -459,22 +459,22 @@ msgstr ""
 #: lawtocode/templates/formulas/admin-edit.mako:39
 #: lawtocode/templates/formulas/admin-edit.mako:86
 #: lawtocode/templates/formulas/admin-view.mako:49
-#: lawtocode/templates/variables/admin-edit.mako:39
-#: lawtocode/templates/variables/admin-edit.mako:86
-#: lawtocode/templates/variables/admin-view.mako:49
+#: lawtocode/templates/parameters/admin-edit.mako:39
+#: lawtocode/templates/parameters/admin-edit.mako:86
+#: lawtocode/templates/parameters/admin-view.mako:49
 msgid "Edit"
 msgstr ""
 
 #: lawtocode/templates/accounts/admin-edit.mako:47
 #: lawtocode/templates/formulas/admin-edit.mako:47
-#: lawtocode/templates/variables/admin-edit.mako:47
+#: lawtocode/templates/parameters/admin-edit.mako:47
 #, python-format
 msgid "Edition of %s"
 msgstr ""
 
 #: lawtocode/templates/accounts/admin-edit.mako:50
 #: lawtocode/templates/formulas/admin-edit.mako:50
-#: lawtocode/templates/variables/admin-edit.mako:50
+#: lawtocode/templates/parameters/admin-edit.mako:50
 msgid "Save"
 msgstr ""
 
@@ -526,21 +526,21 @@ msgstr ""
 #: lawtocode/templates/formulas/admin-index.mako:68
 #: lawtocode/templates/formulas/admin-index.mako:71
 #: lawtocode/templates/formulas/admin-view.mako:92
-#: lawtocode/templates/variables/admin-index.mako:68
-#: lawtocode/templates/variables/admin-index.mako:71
-#: lawtocode/templates/variables/admin-view.mako:92
+#: lawtocode/templates/parameters/admin-index.mako:68
+#: lawtocode/templates/parameters/admin-index.mako:71
+#: lawtocode/templates/parameters/admin-view.mako:92
 msgid "Last Modification"
 msgstr ""
 
 #: lawtocode/templates/accounts/admin-index.mako:100
 #: lawtocode/templates/formulas/admin-index.mako:110
-#: lawtocode/templates/variables/admin-index.mako:110
+#: lawtocode/templates/parameters/admin-index.mako:110
 msgid "Term"
 msgstr ""
 
 #: lawtocode/templates/accounts/admin-index.mako:106
 #: lawtocode/templates/formulas/admin-index.mako:117
-#: lawtocode/templates/variables/admin-index.mako:117
+#: lawtocode/templates/parameters/admin-index.mako:117
 msgid "Search"
 msgstr ""
 
@@ -551,20 +551,20 @@ msgstr ""
 #: lawtocode/templates/accounts/admin-view.mako:92
 #: lawtocode/templates/formulas/admin-edit.mako:71
 #: lawtocode/templates/formulas/admin-view.mako:70
-#: lawtocode/templates/variables/admin-edit.mako:71
-#: lawtocode/templates/variables/admin-view.mako:70
+#: lawtocode/templates/parameters/admin-edit.mako:71
+#: lawtocode/templates/parameters/admin-view.mako:70
 msgid "Description"
 msgstr ""
 
 #: lawtocode/templates/accounts/admin-view.mako:96
 #: lawtocode/templates/formulas/admin-view.mako:73
-#: lawtocode/templates/variables/admin-view.mako:73
+#: lawtocode/templates/parameters/admin-view.mako:73
 msgid "View"
 msgstr ""
 
 #: lawtocode/templates/accounts/admin-view.mako:97
 #: lawtocode/templates/formulas/admin-view.mako:74
-#: lawtocode/templates/variables/admin-view.mako:74
+#: lawtocode/templates/parameters/admin-view.mako:74
 msgid "Source"
 msgstr ""
 
@@ -580,10 +580,10 @@ msgstr ""
 #: lawtocode/templates/formulas/admin-index.mako:62
 #: lawtocode/templates/formulas/admin-index.mako:65
 #: lawtocode/templates/formulas/admin-view.mako:62
-#: lawtocode/templates/variables/admin-edit.mako:61
-#: lawtocode/templates/variables/admin-index.mako:62
-#: lawtocode/templates/variables/admin-index.mako:65
-#: lawtocode/templates/variables/admin-view.mako:62
+#: lawtocode/templates/parameters/admin-edit.mako:61
+#: lawtocode/templates/parameters/admin-index.mako:62
+#: lawtocode/templates/parameters/admin-index.mako:65
+#: lawtocode/templates/parameters/admin-view.mako:62
 msgid "Title"
 msgstr ""
 
@@ -609,23 +609,23 @@ msgstr ""
 
 #: lawtocode/templates/formulas/admin-index.mako:95
 #: lawtocode/templates/formulas/admin-new.mako:38
-#: lawtocode/templates/variables/admin-index.mako:95
-#: lawtocode/templates/variables/admin-new.mako:38
+#: lawtocode/templates/parameters/admin-index.mako:95
+#: lawtocode/templates/parameters/admin-new.mako:38
 msgid "New"
 msgstr ""
 
 #: lawtocode/templates/formulas/admin-index.mako:119
-#: lawtocode/templates/variables/admin-index.mako:119
+#: lawtocode/templates/parameters/admin-index.mako:119
 msgid "News Feed"
 msgstr ""
 
 #: lawtocode/templates/formulas/admin-index.mako:122
-#: lawtocode/templates/variables/admin-index.mako:122
+#: lawtocode/templates/parameters/admin-index.mako:122
 msgid "Simplified Search"
 msgstr ""
 
 #: lawtocode/templates/formulas/admin-index.mako:125
-#: lawtocode/templates/variables/admin-index.mako:125
+#: lawtocode/templates/parameters/admin-index.mako:125
 msgid "Advanced Search"
 msgstr ""
 
@@ -634,7 +634,7 @@ msgid "Creation of Formula"
 msgstr ""
 
 #: lawtocode/templates/formulas/admin-new.mako:49
-#: lawtocode/templates/variables/admin-new.mako:49
+#: lawtocode/templates/parameters/admin-new.mako:49
 msgid "Create"
 msgstr ""
 
@@ -643,7 +643,7 @@ msgid "New Formula"
 msgstr ""
 
 #: lawtocode/templates/formulas/admin-view.mako:48
-#: lawtocode/templates/variables/admin-view.mako:48
+#: lawtocode/templates/parameters/admin-view.mako:48
 msgid "JSON"
 msgstr ""
 
@@ -686,35 +686,35 @@ msgstr ""
 msgid "User ID"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-delete.mako:46
-msgid "Are you sure that you want to delete this variable?"
+#: lawtocode/templates/parameters/admin-delete.mako:46
+msgid "Are you sure that you want to delete this parameter?"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-index.mako:44
-msgid "No variable found"
+#: lawtocode/templates/parameters/admin-index.mako:44
+msgid "No parameter found"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-index.mako:48
-msgid "Variable {0} of {1}"
+#: lawtocode/templates/parameters/admin-index.mako:48
+msgid "Parameter {0} of {1}"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-index.mako:50
-msgid "Variables {0} - {1} of {2}"
+#: lawtocode/templates/parameters/admin-index.mako:50
+msgid "Parameters {0} - {1} of {2}"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-index.mako:53
-msgid "Single variable"
+#: lawtocode/templates/parameters/admin-index.mako:53
+msgid "Single parameter"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-index.mako:55
-msgid "{} variables"
+#: lawtocode/templates/parameters/admin-index.mako:55
+msgid "{} parameters"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-new.mako:46
-msgid "Creation of Variable"
+#: lawtocode/templates/parameters/admin-new.mako:46
+msgid "Creation of Parameter"
 msgstr ""
 
-#: lawtocode/templates/variables/admin-new.mako:66
-msgid "New Variable"
+#: lawtocode/templates/parameters/admin-new.mako:66
+msgid "New Parameter"
 msgstr ""
 

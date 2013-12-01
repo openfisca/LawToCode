@@ -23,7 +23,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""Controllers for variables"""
+"""Controllers for parameters"""
 
 
 import collections
@@ -37,7 +37,7 @@ import webob.multidict
 from .. import contexts, conv, model, paginations, templates, urls, wsgihelpers
 
 
-inputs_to_variable_data = conv.struct(
+inputs_to_parameter_data = conv.struct(
     dict(
         description = conv.cleanup_text,
         title = conv.pipe(
@@ -53,43 +53,43 @@ log = logging.getLogger(__name__)
 @wsgihelpers.wsgify
 def admin_delete(req):
     ctx = contexts.Ctx(req)
-    variable = ctx.node
+    parameter = ctx.node
 
     if not model.is_admin(ctx):
         return wsgihelpers.forbidden(ctx,
             explanation = ctx._("Deletion forbidden"),
-            message = ctx._("You can not delete a variable."),
+            message = ctx._("You can not delete a parameter."),
             title = ctx._('Operation denied'),
             )
 
     if req.method == 'POST':
-        variable.delete(ctx, safe = True)
-        return wsgihelpers.redirect(ctx, location = model.Variable.get_admin_class_url(ctx))
-    return templates.render(ctx, '/variables/admin-delete.mako', variable = variable)
+        parameter.delete(ctx, safe = True)
+        return wsgihelpers.redirect(ctx, location = model.Parameter.get_admin_class_url(ctx))
+    return templates.render(ctx, '/parameters/admin-delete.mako', parameter = parameter)
 
 
 @wsgihelpers.wsgify
 def admin_edit(req):
     ctx = contexts.Ctx(req)
-    variable = ctx.node
+    parameter = ctx.node
 
     if not model.is_admin(ctx):
         return wsgihelpers.forbidden(ctx,
             explanation = ctx._("Deletion forbidden"),
-            message = ctx._("You can not delete a variable."),
+            message = ctx._("You can not delete a parameter."),
             title = ctx._('Operation denied'),
             )
 
     if req.method == 'GET':
         errors = None
         inputs = dict(
-            description = variable.description,
-            title = variable.title,
+            description = parameter.description,
+            title = parameter.title,
             )
     else:
         assert req.method == 'POST'
-        inputs = extract_variable_inputs_from_params(ctx, req.POST)
-        data, errors = inputs_to_variable_data(inputs, state = ctx)
+        inputs = extract_parameter_inputs_from_params(ctx, req.POST)
+        data, errors = inputs_to_parameter_data(inputs, state = ctx)
         if errors is None:
             data['slug'], error = conv.pipe(
                 conv.input_to_slug,
@@ -98,22 +98,22 @@ def admin_edit(req):
             if error is not None:
                 errors = dict(title = error)
         if errors is None:
-            if model.Variable.find(
+            if model.Parameter.find(
                     dict(
-                        _id = {'$ne': variable._id},
+                        _id = {'$ne': parameter._id},
                         slug = data['slug'],
                         ),
                     as_class = collections.OrderedDict,
                     ).count() > 0:
-                errors = dict(email = ctx._('A variable with the same email already exists.'))
+                errors = dict(email = ctx._('A parameter with the same email already exists.'))
         if errors is None:
-            variable.set_attributes(**data)
-            variable.compute_words()
-            variable.save(ctx, safe = True)
+            parameter.set_attributes(**data)
+            parameter.compute_words()
+            parameter.save(ctx, safe = True)
 
-            # View variable.
-            return wsgihelpers.redirect(ctx, location = variable.get_admin_url(ctx))
-    return templates.render(ctx, '/variables/admin-edit.mako', errors = errors, inputs = inputs, variable = variable)
+            # View parameter.
+            return wsgihelpers.redirect(ctx, location = parameter.get_admin_url(ctx))
+    return templates.render(ctx, '/parameters/admin-edit.mako', errors = errors, inputs = inputs, parameter = parameter)
 
 
 @wsgihelpers.wsgify
@@ -148,7 +148,7 @@ def admin_index(req):
         conv.rename_item('page', 'page_number'),
         )(inputs, state = ctx)
     if errors is not None:
-        return wsgihelpers.not_found(ctx, explanation = ctx._('Variable search error: {}').format(errors))
+        return wsgihelpers.not_found(ctx, explanation = ctx._('Parameter search error: {}').format(errors))
 
     criteria = {}
     if data['term'] is not None:
@@ -156,14 +156,14 @@ def admin_index(req):
             re.compile(u'^{}'.format(re.escape(word)))
             for word in data['term']
             ]}
-    cursor = model.Variable.find(criteria, as_class = collections.OrderedDict)
+    cursor = model.Parameter.find(criteria, as_class = collections.OrderedDict)
     pager = paginations.Pager(item_count = cursor.count(), page_number = data['page_number'])
     if data['sort'] == 'slug':
         cursor.sort([('slug', pymongo.ASCENDING)])
     elif data['sort'] == 'updated':
         cursor.sort([(data['sort'], pymongo.DESCENDING), ('slug', pymongo.ASCENDING)])
-    variables = cursor.skip(pager.first_item_index or 0).limit(pager.page_size)
-    return templates.render(ctx, '/variables/admin-index.mako', data = data, errors = errors, variables = variables,
+    parameters = cursor.skip(pager.first_item_index or 0).limit(pager.page_size)
+    return templates.render(ctx, '/parameters/admin-index.mako', data = data, errors = errors, parameters = parameters,
         inputs = inputs, pager = pager)
 
 
@@ -175,18 +175,18 @@ def admin_new(req):
     if user is None:
         return wsgihelpers.unauthorized(ctx,
             explanation = ctx._("Creation unauthorized"),
-            message = ctx._("You can not create a variable."),
+            message = ctx._("You can not create a parameter."),
             title = ctx._('Operation denied'),
             )
 
-    variable = model.Variable()
+    parameter = model.Parameter()
     if req.method == 'GET':
         errors = None
-        inputs = extract_variable_inputs_from_params(ctx)
+        inputs = extract_parameter_inputs_from_params(ctx)
     else:
         assert req.method == 'POST'
-        inputs = extract_variable_inputs_from_params(ctx, req.POST)
-        data, errors = inputs_to_variable_data(inputs, state = ctx)
+        inputs = extract_parameter_inputs_from_params(ctx, req.POST)
+        data, errors = inputs_to_parameter_data(inputs, state = ctx)
         if errors is None:
             data['slug'], error = conv.pipe(
                 conv.input_to_slug,
@@ -195,29 +195,29 @@ def admin_new(req):
             if error is not None:
                 errors = dict(title = error)
         if errors is None:
-            if model.Variable.find(
+            if model.Parameter.find(
                     dict(
                         slug = data['slug'],
                         ),
                     as_class = collections.OrderedDict,
                     ).count() > 0:
-                errors = dict(full_name = ctx._('A variable with the same name already exists.'))
+                errors = dict(full_name = ctx._('A parameter with the same name already exists.'))
         if errors is None:
-            variable.set_attributes(**data)
-            variable.compute_words()
-            variable.save(ctx, safe = True)
+            parameter.set_attributes(**data)
+            parameter.compute_words()
+            parameter.save(ctx, safe = True)
 
-            # View variable.
-            return wsgihelpers.redirect(ctx, location = variable.get_admin_url(ctx))
-    return templates.render(ctx, '/variables/admin-new.mako', errors = errors, inputs = inputs, variable = variable)
+            # View parameter.
+            return wsgihelpers.redirect(ctx, location = parameter.get_admin_url(ctx))
+    return templates.render(ctx, '/parameters/admin-new.mako', errors = errors, inputs = inputs, parameter = parameter)
 
 
 @wsgihelpers.wsgify
 def admin_view(req):
     ctx = contexts.Ctx(req)
-    variable = ctx.node
+    parameter = ctx.node
 
-    return templates.render(ctx, '/variables/admin-view.mako', variable = variable)
+    return templates.render(ctx, '/parameters/admin-view.mako', parameter = parameter)
 
 
 @wsgihelpers.wsgify
@@ -443,7 +443,7 @@ def api1_index(req):
             jsonp = inputs['callback'],
             )
 
-    cursor = model.Variable.get_collection().find(None, [])
+    cursor = model.Parameter.get_collection().find(None, [])
     return wsgihelpers.respond_json(ctx,
         collections.OrderedDict(sorted(dict(
             apiVersion = '1.0',
@@ -452,8 +452,8 @@ def api1_index(req):
             params = inputs,
             url = req.url.decode('utf-8'),
             value = [
-                variable_attributes['_id']
-                for variable_attributes in cursor
+                parameter_attributes['_id']
+                for parameter_attributes in cursor
                 ],
             ).iteritems())),
         headers = headers,
@@ -477,7 +477,7 @@ def api1_typeahead(req):
             ),
         )(inputs, state = ctx)
     if errors is not None:
-        return wsgihelpers.not_found(ctx, explanation = ctx._('Variable search error: {}').format(errors))
+        return wsgihelpers.not_found(ctx, explanation = ctx._('Parameter search error: {}').format(errors))
 
     criteria = {}
     if data['q'] is not None:
@@ -485,17 +485,17 @@ def api1_typeahead(req):
             re.compile(u'^{}'.format(re.escape(word)))
             for word in data['q']
             ]}
-    cursor = model.Variable.get_collection().find(criteria, ['title'])
+    cursor = model.Parameter.get_collection().find(criteria, ['title'])
     return wsgihelpers.respond_json(ctx,
         [
-            variable_attributes['title']
-            for variable_attributes in cursor.limit(10)
+            parameter_attributes['title']
+            for parameter_attributes in cursor.limit(10)
             ],
         headers = headers,
         )
 
 
-def extract_variable_inputs_from_params(ctx, params = None):
+def extract_parameter_inputs_from_params(ctx, params = None):
     if params is None:
         params = webob.multidict.MultiDict()
     return dict(
@@ -535,7 +535,7 @@ def index(req):
         conv.rename_item('page', 'page_number'),
         )(inputs, state = ctx)
     if errors is not None:
-        return wsgihelpers.not_found(ctx, explanation = ctx._('Variable search error: {}').format(errors))
+        return wsgihelpers.not_found(ctx, explanation = ctx._('Parameter search error: {}').format(errors))
 
     criteria = {}
     if data['term'] is not None:
@@ -543,14 +543,14 @@ def index(req):
             re.compile(u'^{}'.format(re.escape(word)))
             for word in data['term']
             ]}
-    cursor = model.Variable.find(criteria, as_class = collections.OrderedDict)
+    cursor = model.Parameter.find(criteria, as_class = collections.OrderedDict)
     pager = paginations.Pager(item_count = cursor.count(), page_number = data['page_number'])
     if data['sort'] == 'slug':
         cursor.sort([('slug', pymongo.ASCENDING)])
     elif data['sort'] == 'updated':
         cursor.sort([(data['sort'], pymongo.DESCENDING), ('slug', pymongo.ASCENDING)])
-    variables = cursor.skip(pager.first_item_index or 0).limit(pager.page_size)
-    return templates.render(ctx, '/variables/index.mako', data = data, errors = errors, variables = variables,
+    parameters = cursor.skip(pager.first_item_index or 0).limit(pager.page_size)
+    return templates.render(ctx, '/parameters/index.mako', data = data, errors = errors, parameters = parameters,
         inputs = inputs, pager = pager)
 
 
@@ -558,16 +558,16 @@ def route_admin(environ, start_response):
     req = webob.Request(environ)
     ctx = contexts.Ctx(req)
 
-    variable, error = conv.pipe(
+    parameter, error = conv.pipe(
         conv.input_to_slug,
         conv.not_none,
-        model.Variable.make_id_or_slug_or_words_to_instance(),
+        model.Parameter.make_id_or_slug_or_words_to_instance(),
         )(req.urlvars.get('id_or_slug_or_words'), state = ctx)
     if error is not None:
-        return wsgihelpers.not_found(ctx, explanation = ctx._('Variable Error: {}').format(error))(
+        return wsgihelpers.not_found(ctx, explanation = ctx._('Parameter Error: {}').format(error))(
             environ, start_response)
 
-    ctx.node = variable
+    ctx.node = parameter
 
     router = urls.make_router(
         ('GET', '^/?$', admin_view),
@@ -590,10 +590,10 @@ def route_api1(environ, start_response):
     req = webob.Request(environ)
     ctx = contexts.Ctx(req)
 
-    variable, error = conv.pipe(
+    parameter, error = conv.pipe(
         conv.input_to_slug,
         conv.not_none,
-        model.Variable.make_id_or_slug_or_words_to_instance(),
+        model.Parameter.make_id_or_slug_or_words_to_instance(),
         )(req.urlvars.get('id_or_slug_or_words'), state = ctx)
     if error is not None:
         params = req.GET
@@ -603,14 +603,14 @@ def route_api1(environ, start_response):
                 context = params.get('context'),
                 error = collections.OrderedDict(sorted(dict(
                     code = 404,  # Not Found
-                    message = ctx._('Variable Error: {}').format(error),
+                    message = ctx._('Parameter Error: {}').format(error),
                     ).iteritems())),
                 method = req.script_name,
                 url = req.url.decode('utf-8'),
                 ).iteritems())),
             )(environ, start_response)
 
-    ctx.node = variable
+    ctx.node = parameter
 
     router = urls.make_router(
         ('DELETE', '^/?$', api1_delete),

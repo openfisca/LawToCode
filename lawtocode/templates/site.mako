@@ -96,8 +96,8 @@ ${conf['realm']}
 <%def name="feeds()" filter="trim">
     <link href="${urls.get_url(ctx, 'api', '1', 'formulas', format = 'atom')}" rel="alternate" title="${
             _(u'{} - Formulas Atom feed').format(conf['realm'])}" type="application/atom+xml">
-    <link href="${urls.get_url(ctx, 'api', '1', 'variables', format = 'atom')}" rel="alternate" title="${
-            _(u'{} - Variables Atom feed').format(conf['realm'])}" type="application/atom+xml">
+    <link href="${urls.get_url(ctx, 'api', '1', 'parameters', format = 'atom')}" rel="alternate" title="${
+            _(u'{} - Parameters Atom feed').format(conf['realm'])}" type="application/atom+xml">
 </%def>
 
 
@@ -229,7 +229,7 @@ $(function () {
             <ul class="nav navbar-nav">
                 <%self:topbar_dropdown_admin/>
                 <li><a href="${model.Formula.get_admin_class_url(ctx)}">${_('Formulas')}</a></li>
-                <li><a href="${model.Variable.get_admin_class_url(ctx)}">${_('Variables')}</a></li>
+                <li><a href="${model.Parameter.get_admin_class_url(ctx)}">${_('Parameters')}</a></li>
             </ul>
             <%self:topbar_user/>
         </div>
@@ -253,7 +253,7 @@ $(function () {
         % if is_admin:
                         <li><a href="${model.Session.get_admin_class_url(ctx)}">${_('Sessions')}</a></li>
         % endif
-                        <li><a href="${model.Variable.get_admin_class_url(ctx)}">${_('Variables')}</a></li>
+                        <li><a href="${model.Parameter.get_admin_class_url(ctx)}">${_('Parameters')}</a></li>
                     </ul>
                 </li>
     % endif

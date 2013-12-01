@@ -34,17 +34,17 @@ from lawtocode import conf, model, urls
 <%def name="breadcrumb_content()" filter="trim">
             <%parent:breadcrumb_content/>
             <li><a href="${urls.get_url(ctx, 'admin')}">${_(u"Admin")}</a></li>
-            <li><a href="${model.Variable.get_admin_class_url(ctx)}">${_(u"Variables")}</a></li>
-            <li><a href="${variable.get_admin_url(ctx)}">${variable.get_title(ctx)}</a></li>
+            <li><a href="${model.Parameter.get_admin_class_url(ctx)}">${_(u"Parameters")}</a></li>
+            <li><a href="${parameter.get_admin_url(ctx)}">${parameter.get_title(ctx)}</a></li>
             <li class="active">${_(u'Edit')}</li>
 </%def>
 
 
 <%def name="container_content()" filter="trim">
-        <form action="${variable.get_admin_url(ctx, 'edit')}" method="post" role="form">
+        <form action="${parameter.get_admin_url(ctx, 'edit')}" method="post" role="form">
             <%self:hidden_fields/>
             <fieldset>
-                <legend>${_(u'Edition of %s') % variable.get_title(ctx)}</legend>
+                <legend>${_(u'Edition of %s') % parameter.get_title(ctx)}</legend>
                 <%self:error_alert/>
                 <%self:form_fields/>
                 <button class="btn btn-primary" name="submit" type="submit"><span class="glyphicon glyphicon-ok"></span> ${_('Save')}</button>
@@ -83,6 +83,6 @@ from lawtocode import conf, model, urls
 
 
 <%def name="title_content()" filter="trim">
-${_(u'Edit')} - ${variable.get_title(ctx)} - ${parent.title_content()}
+${_(u'Edit')} - ${parameter.get_title(ctx)} - ${parent.title_content()}
 </%def>
 

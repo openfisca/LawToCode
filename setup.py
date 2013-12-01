@@ -24,7 +24,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""Web application to crowdsource the extraction of formulas and variables from laws"""
+"""Web application to crowdsource the extraction of formulas and parameters from laws"""
 
 
 try:
@@ -58,7 +58,7 @@ setup(
     author_email = 'contact@openfisca.fr',
     classifiers = [classifier for classifier in classifiers.split('\n') if classifier],
     description = doc_lines[0],
-    keywords = 'crowdsource formula law online opendata server variable web',
+    keywords = 'crowdsource formula law online opendata parameter server web',
     license = 'http://www.fsf.org/licensing/licenses/agpl-3.0.html',
     long_description = '\n'.join(doc_lines[2:]),
     url = 'https://github.com/openfisca/law-to-code',

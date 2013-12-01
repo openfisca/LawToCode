@@ -29,7 +29,7 @@
 import logging
 
 from .. import contexts, templates, urls, wsgihelpers
-from . import accounts, formulas, sessions, variables
+from . import accounts, formulas, parameters, sessions
 
 
 log = logging.getLogger(__name__)
@@ -51,10 +51,10 @@ def make_router():
         (None, '^/admin/accounts(?=/|$)', accounts.route_admin_class),
         (None, '^/admin/formulas(?=/|$)', formulas.route_admin_class),
         (None, '^/admin/sessions(?=/|$)', sessions.route_admin_class),
-        (None, '^/admin/variables(?=/|$)', variables.route_admin_class),
+        (None, '^/admin/parameters(?=/|$)', parameters.route_admin_class),
         (None, '^/api/1/accounts(?=/|$)', accounts.route_api1_class),
         (None, '^/api/1/formulas(?=/|$)', formulas.route_api1_class),
-        (None, '^/api/1/variables(?=/|$)', variables.route_api1_class),
+        (None, '^/api/1/parameters(?=/|$)', parameters.route_api1_class),
         ('POST', '^/login/?$', accounts.login),
         ('POST', '^/logout/?$', accounts.logout),
         )

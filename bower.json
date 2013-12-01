@@ -4,15 +4,15 @@
   "authors": [
     "OpenFisca Team"
   ],
-  "description": "Web application to crowdsource the extraction of formulas and variables from laws",
+  "description": "Web application to crowdsource the extraction of formulas and parameters from laws",
   "keywords": [
     "crowdsource",
     "formula",
     "law",
     "online",
     "opendata",
+    "parameter",
     "server",
-    "variable",
     "web"
   ],
   "license": "AGPL",

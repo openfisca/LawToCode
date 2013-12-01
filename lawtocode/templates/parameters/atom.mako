@@ -31,11 +31,11 @@ from lawtocode import conf, model, texthelpers, urls
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>${conf['realm']}</title>
-    <id>${urls.get_full_url(ctx, 'api', '1', 'variables', **urls.relative_query(inputs))}</id>
-    <link href="${model.Variable.get_admin_class_full_url(ctx) if data['target'] is None \
-            else model.Variable.get_class_back_url(ctx) if data['target'] == 'back' \
-            else model.Variable.get_class_front_url(ctx)}"/>
-    <link href="${urls.get_full_url(ctx, 'api', '1', 'variables', **urls.relative_query(inputs))}" rel="self"/>
+    <id>${urls.get_full_url(ctx, 'api', '1', 'parameters', **urls.relative_query(inputs))}</id>
+    <link href="${model.Parameter.get_admin_class_full_url(ctx) if data['target'] is None \
+            else model.Parameter.get_class_back_url(ctx) if data['target'] == 'back' \
+            else model.Parameter.get_class_front_url(ctx)}"/>
+    <link href="${urls.get_full_url(ctx, 'api', '1', 'parameters', **urls.relative_query(inputs))}" rel="self"/>
 ##    <author>
 ##        <name>${_('OpenFisca Team')}</name>
 ##        <email>${conf['openfisca.email']}</email>
@@ -49,25 +49,25 @@ from lawtocode import conf, model, texthelpers, urls
         This feed is licensed under the Open Licence ${'<http://www.data.gouv.fr/Licence-Ouverte-Open-Licence>'}.
     </rights>
 <%
-    variables = list(cursor)
+    parameters = list(cursor)
     updated = max(
-        variable.updated
-        for variable in variables
+        parameter.updated
+        for parameter in parameters
         )
 %>\
     <updated>${updated}</updated>
-    % for variable in variables:
+    % for parameter in parameters:
     <entry>
-        <title>${variable.title}</title>
-        <id>${variable.get_admin_full_url(ctx)}</id>
-        <link href="${variable.get_admin_full_url(ctx) if data['target'] is None \
-                else variable.get_back_url(ctx) if data['target'] == 'back' \
-                else variable.get_front_url(ctx)}"/>
-        <published>${variable.published}</published>
-        <updated>${variable.updated}</updated>
-        % if variable.description:
+        <title>${parameter.title}</title>
+        <id>${parameter.get_admin_full_url(ctx)}</id>
+        <link href="${parameter.get_admin_full_url(ctx) if data['target'] is None \
+                else parameter.get_back_url(ctx) if data['target'] == 'back' \
+                else parameter.get_front_url(ctx)}"/>
+        <published>${parameter.published}</published>
+        <updated>${parameter.updated}</updated>
+        % if parameter.description:
         <summary type="html">
-            ${texthelpers.clean_html(variable.description)}
+            ${texthelpers.clean_html(parameter.description)}
         </summary>
         % endif
     </entry>

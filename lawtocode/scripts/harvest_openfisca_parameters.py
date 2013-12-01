@@ -28,6 +28,7 @@
 
 
 import argparse
+import json
 import logging
 import os
 import sys
@@ -38,7 +39,18 @@ from biryani1 import baseconv, custom_conv, datetimeconv, states
 app_name = os.path.splitext(os.path.basename(__file__))[0]
 conv = custom_conv(baseconv, datetimeconv, states)
 log = logging.getLogger(app_name)
-#variables = []
+parameters = []
+
+
+def generate_openfisca_code(*ancestors):
+    return u'.'.join(
+        code
+        for code in (
+            ancestor.get('code')
+            for ancestor in reversed(ancestors[:-1])
+            )
+        if code is not None
+        ) or None
 
 
 def main():
@@ -60,12 +72,15 @@ def main():
         parameters_tree = xml.etree.ElementTree.parse(parameters_file_path)
         root_element = parameters_tree.getroot()
         parse_element(root_element)
+
+    print unicode(json.dumps(parameters, ensure_ascii = False, indent = 2)).encode('utf-8')
+
     return 0
 
 
 def parse_element(element, *ancestors):
     if element.tag == 'BAREME':
-        attributes = conv.check(conv.struct(
+        scale_infos = conv.check(conv.struct(
             dict(
                 code = conv.pipe(
                     conv.cleanup_line,
@@ -82,23 +97,39 @@ def parse_element(element, *ancestors):
                 type = conv.test_in(['monetary']),
                 ),
             ))(element.attrib, state = conv.default_state)
+        scale_infos['comment'] = conv.check(conv.pipe(
+            conv.cleanup_line,
+            conv.function(lambda value: value.strip(u'#')),
+            conv.cleanup_line,
+            ))(element.text, state = conv.default_state)
         assert len(element) > 0, list(element)
         for scale_child in element:
             if scale_child.tag == 'TRANCHE':
-                attributes = conv.check(conv.struct(
+                scale_child_infos = conv.check(conv.struct(
                     dict(
                         code = conv.cleanup_line,
                         ),
                     ))(scale_child.attrib, state = conv.default_state)
+                scale_child_infos['comment'] = conv.check(conv.pipe(
+                    conv.cleanup_line,
+                    conv.function(lambda value: value.strip(u'#')),
+                    conv.cleanup_line,
+                    ))(scale_child.text, state = conv.default_state)
                 assert len(scale_child) > 0, list(scale_child)
                 for slice_child in scale_child:
                     if slice_child.tag in ('ASSIETTE', 'SEUIL', 'TAUX'):
-                        conv.check(conv.struct(
+                        slice_child_infos = conv.check(conv.struct(
                             dict(
                                 ),
                             ))(slice_child.attrib, state = conv.default_state)
+                        slice_child_infos['comment'] = conv.check(conv.pipe(
+                            conv.cleanup_line,
+                            conv.function(lambda value: value.strip(u'#')),
+                            conv.cleanup_line,
+                            ))(slice_child.text, state = conv.default_state)
                         assert len(slice_child) > 0, list(slice_child)
-                        parse_value_elements(slice_child, scale_child, element, *ancestors)
+                        values = parse_value_elements(slice_child, slice_child_infos, scale_child_infos, scale_infos,
+                            *ancestors)
                     else:
                         raise KeyError('Unexpected element {} in {} in {}'.format(
                             xml.etree.ElementTree.tostring(slice_child, encoding = 'utf-8'),
@@ -111,7 +142,7 @@ def parse_element(element, *ancestors):
                     xml.etree.ElementTree.tostring(element, encoding = 'utf-8'),
                     ))
     elif element.tag == 'CODE':
-        attributes = conv.check(conv.struct(
+        code = conv.check(conv.struct(
             dict(
                 code = conv.pipe(
                     conv.cleanup_line,
@@ -137,10 +168,21 @@ def parse_element(element, *ancestors):
                     ]),
                 ),
             ))(element.attrib, state = conv.default_state)
+        code['comment'] = conv.check(conv.pipe(
+            conv.cleanup_line,
+            conv.function(lambda value: value.strip(u'#')),
+            conv.cleanup_line,
+            ))(element.text, state = conv.default_state)
         assert len(element) > 0, list(element)
-        parse_value_elements(element, *ancestors)
+        values = parse_value_elements(element, code, *ancestors)
+        for value in values:
+            parameter = value.copy()
+            if code['description'] is not None:
+                parameter[u'description'] = code['description']
+                parameter[u'openfisca_code'] = generate_openfisca_code(code, *ancestors)
+            parameters.append(parameter)
     elif element.tag == 'NODE':
-        attributes = conv.check(conv.struct(
+        node = conv.check(conv.struct(
             dict(
                 code = conv.pipe(
                     conv.cleanup_line,
@@ -149,18 +191,43 @@ def parse_element(element, *ancestors):
                 description = conv.cleanup_line,
                 ),
             ))(element.attrib, state = conv.default_state)
+        node['comment'] = conv.check(conv.pipe(
+            conv.cleanup_line,
+            conv.function(lambda value: value.strip(u'#')),
+            conv.cleanup_line,
+            ))(element.text, state = conv.default_state)
         for child in element:
-            parse_element(child, element, *ancestors)
+            parse_element(child, node, *ancestors)
     else:
         raise KeyError('Unexpected element {}'.format(
             xml.etree.ElementTree.tostring(element, encoding = 'utf-8'),
             ))
 
 
-def parse_value_elements(element, *ancestors):
+def parse_value_elements(element, container, *ancestors):
+    values = []
     for child in element:
         if child.tag == 'VALUE':
-            attributes = conv.check(conv.struct(
+            value_converter = dict(
+                bool = conv.pipe(
+                    conv.cleanup_line,
+                    conv.test_in([u'0', u'1']),
+                    conv.input_to_bool,
+                    ),
+                float = conv.pipe(
+                    conv.cleanup_line,
+                    conv.input_to_float,
+                    ),
+                integer = conv.pipe(
+                    conv.cleanup_line,
+                    conv.input_to_int,
+                    ),
+                percent = conv.pipe(
+                    conv.cleanup_line,
+                    conv.input_to_float,
+                    ),
+                )[container.get('format') or 'float']
+            value_infos = conv.check(conv.struct(
                 dict(
                     code = conv.cleanup_line,
                     deb = conv.pipe(
@@ -173,17 +240,54 @@ def parse_value_elements(element, *ancestors):
                         conv.date_to_iso8601_str,
                         conv.not_none,
                         ),
-                    format = conv.test_equals(element.get('format')),
-                    type = conv.test_equals(element.get('type')),
-                    valeur = conv.cleanup_line,  # TODO
+                    format = conv.pipe(
+                        conv.test_equals(element.get('format')),
+                        conv.translate(dict(
+                            percent = u'rate',
+                            )),
+                        conv.default(u'float'),
+                        ),
+                    type = conv.pipe(
+                        conv.test_equals(element.get('type')),
+                        conv.translate(dict(
+                            age = u'year',
+                            days = u'day',
+                            hours = u'hour',
+                            monetary = u'currency',
+                            months = u'month',
+                            )),
+                        ),
+                    valeur = value_converter,
                     ),
                 ))(child.attrib, state = conv.default_state)
+            value_infos['comment'] = conv.check(conv.pipe(
+                conv.cleanup_line,
+                conv.function(lambda value: value.strip(u'#')),
+                conv.cleanup_line,
+                ))(child.tail, state = conv.default_state)
             assert len(child) == 0, list(child)
+            values.append(dict(
+                (
+                    dict(
+                        code = u'openfisca_code',
+                        comment = u'comment',
+                        deb = u'start_date',
+                        fin = u'stop_date',
+                        format = u'format',
+                        type = u'unit',
+                        valeur = u'value',
+                        )[key],
+                    value,
+                    )
+                for key, value in value_infos.iteritems()
+                if value is not None
+                ))
         else:
             raise KeyError('Unexpected element {} in {}'.format(
                 xml.etree.ElementTree.tostring(child, encoding = 'utf-8'),
                 xml.etree.ElementTree.tostring(element, encoding = 'utf-8'),
                 ))
+    return values
 
 
 if __name__ == "__main__":

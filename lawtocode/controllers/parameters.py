@@ -462,6 +462,159 @@ def api1_index(req):
 
 
 @wsgihelpers.wsgify
+def api1_set(req):
+    ctx = contexts.Ctx(req)
+    headers = wsgihelpers.handle_cross_origin_resource_sharing(ctx)
+
+    assert req.method == 'POST', req.method
+
+    inputs_converters = dict(
+        # Shared secret between client and server
+        api_key = conv.pipe(
+            conv.test_isinstance(basestring),
+            conv.input_to_uuid,
+            conv.not_none,
+            ),
+        # For asynchronous calls
+        context = conv.test_isinstance(basestring),
+        )
+
+    content_type = req.content_type
+    if content_type is not None:
+        content_type = content_type.split(';', 1)[0].strip()
+    if content_type == 'application/json':
+        inputs, error = conv.pipe(
+            conv.make_input_to_json(),
+            conv.test_isinstance(dict),
+            )(req.body, state = ctx)
+        if error is not None:
+            return wsgihelpers.respond_json(ctx,
+                collections.OrderedDict(sorted(dict(
+                    apiVersion = '1.0',
+                    error = collections.OrderedDict(sorted(dict(
+                        code = 400,  # Bad Request
+                        errors = [error],
+                        message = ctx._(u'Invalid JSON in request POST body'),
+                        ).iteritems())),
+                    method = req.script_name,
+                    params = req.body,
+                    url = req.url.decode('utf-8'),
+                    ).iteritems())),
+                headers = headers,
+                )
+        inputs_converters.update(dict(
+            value = conv.pipe(
+                model.Parameter.json_to_attributes,
+                conv.not_none,
+                ),
+            ))
+    else:
+        # URL-encoded POST.
+        inputs = dict(req.POST)
+        inputs_converters.update(dict(
+            value = conv.pipe(
+                conv.make_input_to_json(),
+                model.Parameter.json_to_attributes,
+                conv.not_none,
+                ),
+            ))
+
+    data, errors = conv.struct(inputs_converters)(inputs, state = ctx)
+    if errors is not None:
+        return wsgihelpers.respond_json(ctx,
+            collections.OrderedDict(sorted(dict(
+                apiVersion = '1.0',
+                context = inputs.get('context'),
+                error = collections.OrderedDict(sorted(dict(
+                    code = 400,  # Bad Request
+                    errors = [errors],
+                    message = ctx._(u'Bad parameters in request'),
+                    ).iteritems())),
+                method = req.script_name,
+                params = inputs,
+                url = req.url.decode('utf-8'),
+                ).iteritems())),
+            headers = headers,
+            )
+
+    api_key = data['api_key']
+    account = model.Account.find_one(
+        dict(
+            api_key = api_key,
+            ),
+        as_class = collections.OrderedDict,
+        )
+    if account is None:
+        return wsgihelpers.respond_json(ctx,
+            collections.OrderedDict(sorted(dict(
+                apiVersion = '1.0',
+                context = data['context'],
+                error = collections.OrderedDict(sorted(dict(
+                    code = 401,  # Unauthorized
+                    message = ctx._('Unknown API Key: {}').format(api_key),
+                    ).iteritems())),
+                method = req.script_name,
+                params = inputs,
+                url = req.url.decode('utf-8'),
+                ).iteritems())),
+            headers = headers,
+            )
+    if not account.admin:
+        return wsgihelpers.respond_json(ctx,
+            collections.OrderedDict(sorted(dict(
+                apiVersion = '1.0',
+                context = data['context'],
+                error = collections.OrderedDict(sorted(dict(
+                    code = 403,  # Forbidden
+                    message = ctx._('Non-admin API Key: {}').format(api_key),
+                    ).iteritems())),
+                method = req.script_name,
+                params = inputs,
+                url = req.url.decode('utf-8'),
+                ).iteritems())),
+            headers = headers,
+            )
+
+    parameter_attributes = data['value']
+# TODO: Retrieve existing parameter.
+#    parameter = model.Parameter.find_one(parameter_attributes['_id'], as_class = collections.OrderedDict)
+    parameter = None
+    if parameter is not None and parameter.draft_id != parameter_attributes.get('draft_id'):
+        # The modified parameter is not based on the latest version of the parameter.
+        return wsgihelpers.respond_json(ctx,
+            collections.OrderedDict(sorted(dict(
+                apiVersion = '1.0',
+                context = data['context'],
+                error = collections.OrderedDict(sorted(dict(
+                    code = 409,  # Conflict
+                    message = ctx._('Wrong version: {}, expected: {}').format(parameter_attributes.get('draft_id'),
+                        parameter.draft_id),
+                    ).iteritems())),
+                method = req.script_name,
+                params = inputs,
+                url = req.url.decode('utf-8'),
+                value = conv.check(conv.method('turn_to_json'))(parameter, state = ctx),
+                ).iteritems())),
+            headers = headers,
+            )
+    parameter = model.Parameter(**parameter_attributes)
+    parameter.compute_words()
+    parameter.save(ctx, safe = True)
+
+    return wsgihelpers.respond_json(ctx,
+        collections.OrderedDict(sorted(dict(
+            apiVersion = '1.0',
+            context = data['context'],
+            method = req.script_name,
+            params = inputs,
+            url = req.url.decode('utf-8'),
+            value = conv.check(conv.method('turn_to_json'))(parameter, state = ctx),
+            ).iteritems())),
+        headers = headers,
+        )
+
+
+@wsgihelpers.wsgify
 def api1_typeahead(req):
     ctx = contexts.Ctx(req)
     headers = wsgihelpers.handle_cross_origin_resource_sharing(ctx)
@@ -623,6 +776,7 @@ def route_api1_class(environ, start_response):
     router = urls.make_router(
         ('GET', '^/?$', api1_index),
         ('GET', '^/typeahead/?$', api1_typeahead),
+        ('POST', '^/upsert/?$', api1_set),
         (None, '^/(?P<id_or_slug_or_words>[^/]+)(?=/|$)', route_api1),
         )
     return router(environ, start_response)

@@ -27,7 +27,6 @@
 
 
 import collections
-import conv
 import datetime
 import re
 
@@ -252,9 +251,16 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
 
 class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.ActivityStreamWrapper):
     collection_name = u'parameters'
+    comment = None
     description = None
-    slug = None
+    format = None
+    openfisca_code = None
+#    slug = None
+    start_date = None
+    stop_date = None
     title = None
+    unit = None
+    value = None
 
     @classmethod
     def bson_to_json(cls, value, state = None):
@@ -273,6 +279,7 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
             fragment
             for fragment in (
                 self._id,
+                self.comment,
                 texthelpers.textify_html(self.description),
                 self.title,
                 )
@@ -324,35 +331,131 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
         return self._user
 
     @classmethod
-    def make_id_or_slug_or_words_to_instance(cls):
-        def id_or_slug_or_words_to_instance(value, state = None):
-            if value is None:
-                return value, None
-            if state is None:
-                state = conv.default_state
-            match = uuid_re.match(value)
-            if match is None:
-                self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
-            else:
-                self = cls.find_one(value, as_class = collections.OrderedDict)
-            if self is None:
-                words = sorted(set(value.split(u'-')))
-                instances = list(cls.find(
-                    dict(
-                        words = {'$all': [
-                            re.compile(u'^{}'.format(re.escape(word)))
-                            for word in words
-                            ]},
+    def id_or_words_to_instance(cls, value, state = None):
+        if value is None:
+            return value, None
+        if state is None:
+            state = conv.default_state
+        id, error = conv.str_to_object_id(value, state = state)
+        if error is None:
+            self = cls.find_one(id, as_class = collections.OrderedDict)
+        else:
+#            self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
+            self = None
+        if self is None:
+            words = sorted(set(value.split(u'-')))
+            instances = list(cls.find(
+                dict(
+                    words = {'$all': [
+                        re.compile(u'^{}'.format(re.escape(word)))
+                        for word in words
+                        ]},
+                    ),
+                as_class = collections.OrderedDict,
+                ).limit(2))
+            if not instances:
+                return value, state._(u"No parameter with ID, slug or words: {0}").format(value)
+            if len(instances) > 1:
+                return value, state._(u"Too much parameters with words: {0}").format(u' '.join(words))
+            self = instances[0]
+        return self, None
+
+    @classmethod
+    def json_to_attributes(cls, value, state = None):
+        if value is None:
+            return value, None
+        if state is None:
+            state = conv.default_state
+        attributes, error = conv.pipe(
+            conv.test_isinstance(dict),
+            conv.struct(
+                dict(
+                    comment = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_text,
                         ),
-                    as_class = collections.OrderedDict,
-                    ).limit(2))
-                if not instances:
-                    return value, state._(u"No parameter with ID, slug or words: {0}").format(value)
-                if len(instances) > 1:
-                    return value, state._(u"Too much parameters with words: {0}").format(u' '.join(words))
-                self = instances[0]
-            return self, None
-        return id_or_slug_or_words_to_instance
+                    description = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_text,
+                        ),
+                    draft_id = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.input_to_object_id,
+                        ),
+                    format = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_line,
+                        conv.test_in([
+                            u'bool',
+                            u'float',
+                            u'integer',
+                            u'rate',
+                            ]),
+                        ),
+                    openfisca_code = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_line,
+                        ),
+#                    slug = None
+                    start_date = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.iso8601_input_to_date,
+                        conv.date_to_iso8601_str,
+                        ),
+                    stop_date = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.iso8601_input_to_date,
+                        conv.date_to_iso8601_str,
+                        ),
+                    title = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_line,
+                        ),
+                    unit = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_line,
+                        conv.test_in([
+                            u'currency',
+                            u'day',
+                            u'hour',
+                            u'month',
+                            u'year',
+                            ]),
+                        ),
+                    value = conv.noop,  # Conversion is done below.
+                    ),
+                ),
+            )(value, state = state)
+        if error is not None:
+            return attributes, error
+
+        value_converter = dict(
+            bool = conv.pipe(
+                conv.test_isinstance((bool, int)),
+                conv.anything_to_bool,
+                ),
+            float = conv.pipe(
+                conv.test_isinstance((float, int)),
+                conv.anything_to_float,
+                ),
+            integer = conv.pipe(
+                conv.test_isinstance((float, int)),
+                conv.anything_to_int,
+                ),
+            rate = conv.pipe(
+                conv.test_isinstance((float, int)),
+                conv.anything_to_float,
+                ),
+            ).get(attributes['format'], conv.noop)
+        return conv.pipe(
+            conv.test_isinstance(dict),
+            conv.struct(
+                dict(
+                    value = value_converter,
+                    ),
+                default = conv.noop,
+                ),
+            )(attributes, state = state)
 
     def turn_to_json_attributes(self, state):
         value, error = conv.object_to_clean_dict(self, state = state)

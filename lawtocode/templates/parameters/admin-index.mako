@@ -64,6 +64,9 @@ from lawtocode import model, texthelpers, urls
                     <th><a href="${model.Parameter.get_admin_class_url(ctx, **urls.relative_query(inputs, page = None,
                             sort = 'slug'))}">${_(u"Title")}</a></th>
             % endif
+                    <th>${_(u"Start Date")}</th>
+                    <th>${_(u"Stop Date")}</th>
+                    <th>${_(u"Value")}</th>
             % if data['sort'] == 'updated':
                     <th>${_(u"Updated")} <span class="glyphicon glyphicon-sort-by-attributes-alt"></span></th>
             % else:
@@ -84,6 +87,9 @@ from lawtocode import model, texthelpers, urls
                         ${texthelpers.truncate(description_text, length = 180, whole_word = True)}
             % endif
                     </td>
+                    <td>${parameter.start_date or u''}</td>
+                    <td>${parameter.stop_date or u''}</td>
+                    <td>${parameter.value if parameter.value is not None else u''}</td>
                     <td>${parameter.updated.split('T')[0]}</td>
                 </tr>
         % endfor

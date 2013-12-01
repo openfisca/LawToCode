@@ -28,17 +28,21 @@
 
 
 import argparse
+import ConfigParser
 import json
 import logging
 import os
 import sys
 import xml.etree.ElementTree
+import urlparse
 
 from biryani1 import baseconv, custom_conv, datetimeconv, states
+import requests
 
 app_name = os.path.splitext(os.path.basename(__file__))[0]
 conv = custom_conv(baseconv, datetimeconv, states)
 log = logging.getLogger(app_name)
+N_ = lambda message: message
 parameters = []
 
 
@@ -55,12 +59,44 @@ def generate_openfisca_code(*ancestors):
 
 def main():
     parser = argparse.ArgumentParser(description = __doc__)
-    parser.add_argument('-o', '--openfisca-dir', help = "directory of the openfisca project", required = True)
+    parser.add_argument('config', help = 'path of configuration file')
     parser.add_argument('-v', '--verbose', action = 'store_true', default = False, help = "increase output verbosity")
     args = parser.parse_args()
     logging.basicConfig(level = logging.DEBUG if args.verbose else logging.WARNING, stream = sys.stdout)
 
-    countries_dir = os.path.join(args.openfisca_dir, 'src', 'countries')
+    config_parser = ConfigParser.SafeConfigParser(dict(
+        here = os.path.dirname(os.path.abspath(os.path.normpath(args.config))),
+        ))
+    config_parser.read(args.config)
+    conf = conv.check(conv.pipe(
+        conv.test_isinstance(dict),
+        conv.struct(
+            {
+                'law_to_code.api_key': conv.pipe(
+                    conv.cleanup_line,
+                    conv.not_none,
+                    ),
+                'law_to_code.site_url': conv.pipe(
+                    conv.make_input_to_url(error_if_fragment = True, error_if_path = True, error_if_query = True,
+                        full = True),
+                    conv.not_none,
+                    ),
+                'openfisca.dir': conv.pipe(
+                    conv.cleanup_line,
+                    conv.test(os.path.exists, N_(u'Missing directory')),
+                    conv.not_none,
+                    ),
+                'user_agent': conv.pipe(
+                    conv.cleanup_line,
+                    conv.not_none,
+                    ),
+                },
+            default = 'drop',
+            ),
+        conv.not_none,
+        ))(dict(config_parser.items('Law-to-Code-OpenFisca-Harvester')), conv.default_state)
+
+    countries_dir = os.path.join(conf['openfisca.dir'], 'src', 'countries')
     for country_dir_name, country_name in (
             (u'france', u"France"),
             (u'tunisia', u"Tunisia"),
@@ -73,7 +109,21 @@ def main():
         root_element = parameters_tree.getroot()
         parse_element(root_element)
 
-    print unicode(json.dumps(parameters, ensure_ascii = False, indent = 2)).encode('utf-8')
+    parameter_upsert_url = urlparse.urljoin(conf['law_to_code.site_url'], 'api/1/parameters/upsert')
+    for parameter in parameters:
+        response = requests.post(parameter_upsert_url,
+            data = unicode(json.dumps(dict(
+                api_key = conf['law_to_code.api_key'],
+                value = parameter,
+                ), ensure_ascii = False, indent = 2)).encode('utf-8'),
+            headers = {
+                'Content-Type': 'application/json; charset=utf-8',
+                'User-Agent': conf['user_agent']
+                }
+            )
+        if not response.ok:
+            print response.json()
+            response.raise_for_status()
 
     return 0
 
@@ -177,9 +227,9 @@ def parse_element(element, *ancestors):
         values = parse_value_elements(element, code, *ancestors)
         for value in values:
             parameter = value.copy()
-            if code['description'] is not None:
-                parameter[u'description'] = code['description']
-                parameter[u'openfisca_code'] = generate_openfisca_code(code, *ancestors)
+            parameter.pop('code', None)
+            parameter[u'openfisca_code'] = generate_openfisca_code(code, *ancestors)
+            parameter[u'title'] = code['description']
             parameters.append(parameter)
     elif element.tag == 'NODE':
         node = conv.check(conv.struct(
@@ -269,7 +319,7 @@ def parse_value_elements(element, container, *ancestors):
             values.append(dict(
                 (
                     dict(
-                        code = u'openfisca_code',
+                        code = u'code',
                         comment = u'comment',
                         deb = u'start_date',
                         fin = u'stop_date',

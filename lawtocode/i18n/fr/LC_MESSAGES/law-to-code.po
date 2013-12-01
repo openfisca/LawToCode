@@ -1,12 +1,12 @@
-# French translations for law-to-code.
+# French translations for Law-to-Code.
 # Copyright (C) 2013 ORGANIZATION
-# This file is distributed under the same license as the law-to-code
+# This file is distributed under the same license as the Law-to-Code
 # project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: law-to-code 0.1dev\n"
+"Project-Id-Version: Law-to-Code 0.1dev\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2013-10-27 23:56+0100\n"
 "PO-Revision-Date: 2013-10-27 16:08+0100\n"
@@ -306,8 +306,8 @@ msgid "Parameter Error: {}"
 msgstr "Erreur dans la recherche de mots-clés : {}"
 
 #: lawtocode/templates/index.mako:56
-msgid "Welcome to law-to-code"
-msgstr "Bienvenue sur law-to-code"
+msgid "Welcome to Law-to-Code"
+msgstr "Bienvenue sur Law-to-Code"
 
 #: lawtocode/templates/index.mako:57
 msgid "Extract formulas from laws"

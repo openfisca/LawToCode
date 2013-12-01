@@ -1,12 +1,12 @@
-# Translations template for law-to-code.
+# Translations template for Law-to-Code.
 # Copyright (C) 2013 ORGANIZATION
-# This file is distributed under the same license as the law-to-code project.
+# This file is distributed under the same license as the Law-to-Code project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: law-to-code 0.1dev\n"
+"Project-Id-Version: Law-to-Code 0.1dev\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2013-10-27 23:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -271,7 +271,7 @@ msgid "Parameter Error: {}"
 msgstr ""
 
 #: lawtocode/templates/index.mako:56
-msgid "Welcome to law-to-code"
+msgid "Welcome to Law-to-Code"
 msgstr ""
 
 #: lawtocode/templates/index.mako:57

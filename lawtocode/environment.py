@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 
 
-# law-to-code -- Extract formulas from laws
+# Law-to-Code -- Extract formulas & parameters from laws
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2013 OpenFisca Team
 # https://github.com/openfisca/law-to-code
 #
-# This file is part of law-to-code.
+# This file is part of Law-to-Code.
 #
-# law-to-code is free software; you can redistribute it and/or modify
+# Law-to-Code is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
-# law-to-code is distributed in the hope that it will be useful,
+# Law-to-Code is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
@@ -95,7 +95,7 @@ def load_environment(global_conf, app_conf):
             'piwik.site_id': conv.input_to_int,
             'piwik.url': conv.make_input_to_url(full = True, error_if_fragment = True, error_if_path = True,
                 error_if_query = True),
-            'realm': conv.default(u'law-to-code'),
+            'realm': conv.default(u'Law-to-Code'),
             # Whether this application serves its own static files.
             'static_files': conv.pipe(conv.guess_bool, conv.default(True)),
             'static_files_dir': conv.default(os.path.join(app_dir, 'static')),
@@ -112,7 +112,7 @@ def load_environment(global_conf, app_conf):
         errorware['error_email'] = conf['email_to']
         errorware['error_log'] = conf.get('error_log', None)
         errorware['error_message'] = conf.get('error_message', 'An internal server error occurred')
-        errorware['error_subject_prefix'] = conf.get('error_subject_prefix', 'law-to-code Error: ')
+        errorware['error_subject_prefix'] = conf.get('error_subject_prefix', 'Law-to-Code Error: ')
         errorware['from_address'] = conf['from_address']
         errorware['smtp_server'] = conf.get('smtp_server', 'localhost')
 

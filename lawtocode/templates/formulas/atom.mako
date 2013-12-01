@@ -5,7 +5,7 @@
 ## By: Emmanuel Raviart <emmanuel@raviart.com>
 ##
 ## Copyright (C) 2013 OpenFisca Team
-## https://github.com/openfisca/law-to-code
+## https://github.com/openfisca/LawToCode
 ##
 ## This file is part of Law-to-Code.
 ##
@@ -44,7 +44,7 @@ from lawtocode import conf, model, texthelpers, urls
 ##    % for tag in (tags or []):
 ##          <category term="${tag}"/>
 ##    % endfor
-    <generator uri="https://github.com/openfisca/law-to-code">Law-to-Code</generator>
+    <generator uri="https://github.com/openfisca/LawToCode">Law-to-Code</generator>
     <rights>
         This feed is licensed under the Open Licence ${'<http://www.data.gouv.fr/Licence-Ouverte-Open-Licence>'}.
     </rights>

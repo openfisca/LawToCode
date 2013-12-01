@@ -5,7 +5,7 @@
 ## By: Emmanuel Raviart <emmanuel@raviart.com>
 ##
 ## Copyright (C) 2013 OpenFisca Team
-## https://github.com/openfisca/law-to-code
+## https://github.com/openfisca/LawToCode
 ##
 ## This file is part of Law-to-Code.
 ##
@@ -106,7 +106,7 @@ ${conf['realm']}
             <%self:footer_service/>
             <p>
                 ${_('{0}:').format(_('Software'))}
-                <a href="https://github.com/openfisca/law-to-code" rel="external">Law-to-Code</a>
+                <a href="https://github.com/openfisca/LawToCode" rel="external">Law-to-Code</a>
                 &mdash;
                 <span>Copyright © 2013 OpenFisca Team</span>
                 &mdash;

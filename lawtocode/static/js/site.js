@@ -3,7 +3,7 @@
  * By: Emmanuel Raviart <emmanuel@raviart.com>
  *
  * Copyright (C) 2013 OpenFisca Team
- * https://github.com/openfisca/law-to-code
+ * https://github.com/openfisca/LawToCode
  *
  * This file is part of Law-to-Code.
  *

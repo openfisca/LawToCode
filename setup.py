@@ -6,7 +6,7 @@
 # By: Emmanuel Raviart <emmanuel@raviart.com>
 #
 # Copyright (C) 2013 OpenFisca Team
-# https://github.com/openfisca/law-to-code
+# https://github.com/openfisca/LawToCode
 #
 # This file is part of Law-to-Code.
 #
@@ -61,7 +61,7 @@ setup(
     keywords = 'crowdsource formula law online opendata parameter server web',
     license = 'http://www.fsf.org/licensing/licenses/agpl-3.0.html',
     long_description = '\n'.join(doc_lines[2:]),
-    url = 'https://github.com/openfisca/law-to-code',
+    url = 'https://github.com/openfisca/LawToCode',
 
     data_files = [
         ('share/locale/fr/LC_MESSAGES', ['lawtocode/i18n/fr/LC_MESSAGES/law-to-code.mo']),

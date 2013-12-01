@@ -33,10 +33,7 @@ import re
 
 from biryani1 import strings
 
-from . import objects, texthelpers, urls, wsgihelpers
-
-
-uuid_re = re.compile(ur'[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$')
+from . import conv, objects, texthelpers, urls, wsgihelpers
 
 
 class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, objects.ActivityStreamWrapper):
@@ -53,6 +50,8 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         if value is None:
             return value, None
         value = value.copy()
+        if value.get('draft_id') is not None:
+            value['draft_id'] = unicode(value['draft_id'])
         id = value.pop('_id', None)
         if id is not None:
             value['id'] = unicode(id)
@@ -98,11 +97,11 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
                 return value, None
             if state is None:
                 state = conv.default_state
-            match = uuid_re.match(value)
-            if match is None:
-                self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
+            id, error = conv.str_to_object_id(value, state = state)
+            if error is None:
+                self = cls.find_one(id, as_class = collections.OrderedDict)
             else:
-                self = cls.find_one(value, as_class = collections.OrderedDict)
+                self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
             if self is None:
                 words = sorted(set(value.split(u'-')))
                 instances = list(cls.find(
@@ -126,9 +125,11 @@ class Account(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         value, error = conv.object_to_clean_dict(self, state = state)
         if error is not None:
             return value, error
+        if value.get('draft_id') is not None:
+            value['draft_id'] = unicode(value['draft_id'])
         id = value.pop('_id', None)
         if id is not None:
-            value['id'] = id
+            value['id'] = unicode(id)
         value.pop('api_key', None)
         return value, None
 
@@ -144,6 +145,8 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         if value is None:
             return value, None
         value = value.copy()
+        if value.get('draft_id') is not None:
+            value['draft_id'] = unicode(value['draft_id'])
         id = value.pop('_id', None)
         if id is not None:
             value['id'] = unicode(id)
@@ -211,11 +214,11 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
                 return value, None
             if state is None:
                 state = conv.default_state
-            match = uuid_re.match(value)
-            if match is None:
-                self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
+            id, error = conv.str_to_object_id(value, state = state)
+            if error is None:
+                self = cls.find_one(id, as_class = collections.OrderedDict)
             else:
-                self = cls.find_one(value, as_class = collections.OrderedDict)
+                self = cls.find_one(dict(slug = value), as_class = collections.OrderedDict)
             if self is None:
                 words = sorted(set(value.split(u'-')))
                 instances = list(cls.find(
@@ -239,9 +242,11 @@ class Formula(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, obj
         value, error = conv.object_to_clean_dict(self, state = state)
         if error is not None:
             return value, error
+        if value.get('draft_id') is not None:
+            value['draft_id'] = unicode(value['draft_id'])
         id = value.pop('_id', None)
         if id is not None:
-            value['id'] = id
+            value['id'] = unicode(id)
         return value, None
 
 
@@ -256,6 +261,8 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
         if value is None:
             return value, None
         value = value.copy()
+        if value.get('draft_id') is not None:
+            value['draft_id'] = unicode(value['draft_id'])
         id = value.pop('_id', None)
         if id is not None:
             value['id'] = unicode(id)
@@ -281,14 +288,14 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
         return urls.get_url(ctx, 'admin', 'parameters', *path, **query)
 
     def get_admin_full_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
+        if self._id is None:
             return None
-        return self.get_admin_class_full_url(ctx, self.slug or self._id, *path, **query)
+        return self.get_admin_class_full_url(ctx, self._id, *path, **query)
 
     def get_admin_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
+        if self._id is None:
             return None
-        return self.get_admin_class_url(ctx, self.slug or self._id, *path, **query)
+        return self.get_admin_class_url(ctx, self._id, *path, **query)
 
     @classmethod
     def get_class_full_url(cls, ctx, *path, **query):
@@ -299,17 +306,17 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
         return urls.get_url(ctx, 'parameters', *path, **query)
 
     def get_full_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
+        if self._id is None:
             return None
-        return self.get_class_full_url(ctx, self.slug or self._id, *path, **query)
+        return self.get_class_full_url(ctx, self._id, *path, **query)
 
     def get_title(self, ctx):
-        return self.title or self.slug or self._id
+        return self.title or self._id
 
     def get_url(self, ctx, *path, **query):
-        if self._id is None and self.slug is None:
+        if self._id is None:
             return None
-        return self.get_class_url(ctx, self.slug or self._id, *path, **query)
+        return self.get_class_url(ctx, self._id, *path, **query)
 
     def get_user(self, ctx):
         if self._user is UnboundLocalError:
@@ -351,9 +358,11 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
         value, error = conv.object_to_clean_dict(self, state = state)
         if error is not None:
             return value, error
+        if value.get('draft_id') is not None:
+            value['draft_id'] = unicode(value['draft_id'])
         id = value.pop('_id', None)
         if id is not None:
-            value['id'] = id
+            value['id'] = unicode(id)
         return value, None
 
 
@@ -389,23 +398,6 @@ class Session(objects.JsonMonoClassMapper, objects.Mapper, objects.SmartWrapper)
         return ctx._(u'Session {0} of {1}').format(self.token, user.get_title(ctx))
 
     @classmethod
-    def make_token_to_instance(cls):
-        def token_to_instance(value, state = None):
-            if value is None:
-                return value, None
-            if state is None:
-                state = conv.default_state
-
-            # First, delete expired sessions.
-            cls.remove_expired(state)
-
-            self = cls.find_one(dict(token = value), as_class = collections.OrderedDict)
-            if self is None:
-                return value, state._(u"No session with token {0}").format(value)
-            return self, None
-        return token_to_instance
-
-    @classmethod
     def remove_expired(cls, ctx):
         for self in cls.find(
                 dict(expiration = {'$lt': datetime.datetime.utcnow()}),
@@ -423,6 +415,21 @@ class Session(objects.JsonMonoClassMapper, objects.Mapper, objects.SmartWrapper)
         if self._user is UnboundLocalError:
             self._user = Account.find_one(self.user_id) if self.user_id is not None else None
         return self._user
+
+    @classmethod
+    def uuid_to_instance(cls, value, state = None):
+        if value is None:
+            return value, None
+        if state is None:
+            state = conv.default_state
+
+        # First, delete expired sessions.
+        cls.remove_expired(state)
+
+        self = cls.find_one(dict(token = value), as_class = collections.OrderedDict)
+        if self is None:
+            return value, state._(u"No session with UUID {0}").format(value)
+        return self, None
 
 
 class Status(objects.Mapper, objects.Wrapper):

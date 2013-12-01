@@ -26,6 +26,8 @@
 """Conversion functions"""
 
 
+import re
+
 from biryani1.baseconv import *
 from biryani1.bsonconv import *
 from biryani1.datetimeconv import *
@@ -34,7 +36,14 @@ from biryani1.jsonconv import *
 from biryani1.states import default_state, State
 
 
-input_to_token = cleanup_line
+N_ = lambda message: message
+uuid_re = re.compile(ur'[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$')
+
+
+input_to_uuid = pipe(
+    cleanup_line,
+    test(uuid_re.match, error = N_(u'Invalid UUID format')),
+    )
 
 
 input_to_words = pipe(
@@ -49,7 +58,7 @@ input_to_words = pipe(
 #    struct(
 #        dict(
 #            id = pipe(
-#                input_to_token,
+#                input_to_object_id,
 #                not_none,
 #                ),
 #            ),

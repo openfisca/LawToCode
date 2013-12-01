@@ -90,9 +90,9 @@ def route_admin(environ, start_response):
     ctx = contexts.Ctx(req)
 
     session, error = conv.pipe(
-        conv.input_to_token,
+        conv.input_to_uuid,
         conv.not_none,
-        model.Session.make_token_to_instance(),
+        model.Session.uuid_to_instance,
         )(req.urlvars.get('token'), state = ctx)
     if error is not None:
         return wsgihelpers.not_found(ctx, explanation = ctx._('Session Error: {}').format(error))(

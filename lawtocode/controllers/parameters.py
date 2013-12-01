@@ -259,7 +259,7 @@ def api1_delete(req):
             # Shared secret between client and server
             api_key = conv.pipe(
                 conv.test_isinstance(basestring),
-                conv.input_to_token,
+                conv.input_to_uuid,
                 conv.not_none,
                 ),
             # For asynchronous calls
@@ -561,7 +561,7 @@ def route_admin(environ, start_response):
     parameter, error = conv.pipe(
         conv.input_to_slug,
         conv.not_none,
-        model.Parameter.make_id_or_slug_or_words_to_instance(),
+        model.Parameter.id_or_words_to_instance,
         )(req.urlvars.get('id_or_slug_or_words'), state = ctx)
     if error is not None:
         return wsgihelpers.not_found(ctx, explanation = ctx._('Parameter Error: {}').format(error))(
@@ -593,7 +593,7 @@ def route_api1(environ, start_response):
     parameter, error = conv.pipe(
         conv.input_to_slug,
         conv.not_none,
-        model.Parameter.make_id_or_slug_or_words_to_instance(),
+        model.Parameter.id_or_words_to_instance,
         )(req.urlvars.get('id_or_slug_or_words'), state = ctx)
     if error is not None:
         params = req.GET

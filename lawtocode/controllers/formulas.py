@@ -259,7 +259,7 @@ def api1_delete(req):
             # Shared secret between client and server
             api_key = conv.pipe(
                 conv.test_isinstance(basestring),
-                conv.input_to_token,
+                conv.input_to_uuid,
                 conv.not_none,
                 ),
             # For asynchronous calls

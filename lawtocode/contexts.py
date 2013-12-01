@@ -189,9 +189,9 @@ class Ctx(conv.State):
             else:
                 from . import model
                 session, error = conv.pipe(
-                    conv.input_to_token,
+                    conv.input_to_uuid,
                     conv.not_none,
-                    model.Session.make_token_to_instance(),
+                    model.Session.uuid_to_instance,
                     )(self.req.cookies.get(conf['cookie']), state = self)
                 self.session = session if error is None else None
         return self._session

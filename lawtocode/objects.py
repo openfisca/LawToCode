@@ -28,8 +28,8 @@
 
 import collections
 import datetime
-import uuid
 
+from bson import objectid
 import pymongo
 
 from . import contexts, conv
@@ -312,7 +312,7 @@ class SmartWrapper(Wrapper):
             old_bson = collection.find_one(id, as_class = collections.OrderedDict)
             if bson == old_bson:
                 return False
-        self.draft_id = bson['draft_id'] = unicode(uuid.uuid4())
+        self.draft_id = bson['draft_id'] = objectid.ObjectId()
         self.before_upsert(ctx, old_bson, bson)
         collection.save(bson, *args, **kwargs)
         if id is None:

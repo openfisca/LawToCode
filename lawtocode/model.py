@@ -254,10 +254,13 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
     comment = None
     description = None
     format = None
+    legislative_reference = None
+    official_publication_date = None
     openfisca_code = None
 #    slug = None
     start_date = None
     stop_date = None
+    taxipp_code = None
     title = None
     unit = None
     value = None
@@ -392,6 +395,15 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
                             u'rate',
                             ]),
                         ),
+                    legislative_reference = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_text,
+                        ),
+                    official_publication_date = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.iso8601_input_to_date,
+                        conv.date_to_iso8601_str,
+                        ),
                     openfisca_code = conv.pipe(
                         conv.test_isinstance(basestring),
                         conv.cleanup_line,
@@ -407,6 +419,10 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
                         conv.iso8601_input_to_date,
                         conv.date_to_iso8601_str,
                         ),
+                    taxipp_code = conv.pipe(
+                        conv.test_isinstance(basestring),
+                        conv.cleanup_line,
+                        ),
                     title = conv.pipe(
                         conv.test_isinstance(basestring),
                         conv.cleanup_line,
@@ -415,8 +431,10 @@ class Parameter(objects.Initable, objects.JsonMonoClassMapper, objects.Mapper, o
                         conv.test_isinstance(basestring),
                         conv.cleanup_line,
                         conv.test_in([
-                            u'currency',
+                            u'currency',  # TODO: Remove and replace with EUR, FRF, etc
                             u'day',
+                            u'EUR',
+                            u'FRF',
                             u'hour',
                             u'month',
                             u'year',
